@@ -1,0 +1,36 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Thu Dec  2 15:42:12 2021
+[*]
+[dumpfile] "/mnt/c/p/skullic/cell_tb.vcd"
+[dumpfile_mtime] "Thu Dec  2 15:41:12 2021"
+[dumpfile_size] 1465
+[savefile] "/mnt/c/p/skullic/test/cell_tb.gtkw"
+[timestart] 19400
+[size] 1000 600
+[pos] -357 -39
+*-15.033462 34000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] test_silife_cell.
+[sst_width] 214
+[signals_width] 198
+[sst_expanded] 1
+[sst_vpaned_height] 152
+@28
+test_silife_cell.reset
+test_silife_cell.clk
+test_silife_cell.e
+test_silife_cell.n
+test_silife_cell.ne
+test_silife_cell.nw
+test_silife_cell.s
+test_silife_cell.se
+test_silife_cell.sw
+test_silife_cell.w
+@25
+[color] 2
+test_silife_cell.exec.living_neighbors[2:0]
+@28
+[color] 3
+test_silife_cell.out
+[pattern_trace] 1
+[pattern_trace] 0

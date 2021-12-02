@@ -1,0 +1,4 @@
+*.vcd
+*.out
+*.pyc
+results.xml
