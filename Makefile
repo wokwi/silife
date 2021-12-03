@@ -14,5 +14,8 @@ test_matrix:
 	./matrix_tb.out
 	gtkwave matrix_tb.vcd test/matrix_tb.gtkw
 
+show_synth_%: src/%.v
+	yosys -p "read_verilog $<; proc; opt; show -colors 2 -width -signed"
+
 format:
 	verible-verilog-format --inplace src/*.v test/*.v
