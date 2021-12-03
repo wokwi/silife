@@ -5,9 +5,16 @@
 //
 `default_nettype none
 
-function [63:0] row_to_string(input clk, input [7:0] row);
-  begin
-    row_to_string = !clk ? 64'dz : {
+module test_silife_matrix ();
+  reg reset;
+  reg clk;
+  reg [7:0][7:0] set_cells;
+  wire [7:0][7:0] cells;
+
+  /* Pretty output for the test bench */
+  function [63:0] row_to_string(input clk, input [7:0] row);
+    begin
+      row_to_string = !clk ? 64'dz : {
       row[0] ? "*" : " ",
       row[1] ? "*" : " ",
       row[2] ? "*" : " ",
@@ -17,14 +24,8 @@ function [63:0] row_to_string(input clk, input [7:0] row);
       row[6] ? "*" : " ",
       row[7] ? "*" : " "
     };
-  end
-endfunction
-
-module test_silife_matrix ();
-  reg reset;
-  reg clk;
-  reg [7:0][7:0] set_cells;
-  wire [7:0][7:0] cells;
+    end
+  endfunction
 
   wire [63:0] row0 = row_to_string(clk, cells[0]);
   wire [63:0] row1 = row_to_string(clk, cells[1]);
@@ -38,7 +39,7 @@ module test_silife_matrix ();
   silife_matrix exec (
       .reset(reset),
       .clk(clk),
-      .enable(1),
+      .enable(1'b1),
       .set_cells(set_cells),
       .cells(cells)
   );

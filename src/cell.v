@@ -24,10 +24,10 @@ module silife_cell (
   wire [7:0] neighbors = {nw, n, ne, e, se, s, sw, w};
   reg [2:0] living_neighbors;
 
-  always @(*) begin
+  always @(*) begin : count_neighbors
     integer j;
     living_neighbors = 3'd0;
-    for (j = 0; j < 8; j++) living_neighbors += {1'b00, neighbors[j]};
+    for (j = 0; j < 8; j++) living_neighbors += {2'b00, neighbors[j]};
   end
 
   always @(posedge clk) begin
