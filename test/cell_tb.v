@@ -1,61 +1,39 @@
 // SPDX-FileCopyrightText: © 2021 Uri Shaked <uri@wokwi.com>
 // SPDX-License-Identifier: MIT
 
-`timescale 1ns / 1ps
-//
-`default_nettype none
+module silife_cell (
+    input  wire reset,
+    input  wire clk,
+    input  wire enable,
+    input  wire revive,
+    /* Neighbors */
+    input  wire nw,
+    input  wire n,
+    input  wire ne,
+    input  wire e,
+    input  wire se,
+    input  wire s,
+    input  wire sw,
+    input  wire w,
+    output wire out
+);
 
-module test_silife_cell ();
-  reg  reset;
-  reg  clk;
-  reg  nw = 0;
-  reg  n = 0;
-  reg  ne = 0;
-  reg  e = 0;
-  reg  se = 0;
-  reg  s = 0;
-  reg  sw = 0;
-  reg  w = 0;
-  wire out;
+  reg state;
+  assign out = state;
 
-  silife_cell exec (
-      .reset(reset),
-      .clk(clk),
-      .nw(nw),
-      .n(n),
-      .ne(ne),
-      .e(e),
-      .se(se),
-      .s(s),
-      .sw(sw),
-      .w(w),
-      .out(out)
-  );
+  wire [7:0] neighbors = {nw, n, ne, e, se, s, sw, w};
+  reg [2:0] living_neighbors;
 
-  initial begin
-    clk = 0;
-    forever begin
-      #5 clk = ~clk;
-    end
+  always @(*) begin : count_neighbors
+    integer j;
+    living_neighbors = 3'd0;
+    for (j = 0; j < 8; j++) living_neighbors += {2'b00, neighbors[j]};
   end
 
-  initial begin
-    reset <= 1;
-    #10 reset <= 0;
-    nw <= 1;
-    #10 n <= 1;
-    #10 s <= 1;
-    #10 s <= 0;
-    #10 e <= 1;
-    #10 s <= 1;
-    #10 n <= 0;
-    #10 s <= 0;
-    #10 e <= 0;
-    #20 $finish();
+  always @(posedge clk) begin
+    if (reset) state <= 0;
+    else if (revive) state <= 1;
+    else if (enable) state <= (state && living_neighbors == 2) || living_neighbors == 3;
   end
 
-  initial begin
-    $dumpfile("cell_tb.vcd");
-    $dumpvars(0, test_silife_cell);
-  end
 endmodule
