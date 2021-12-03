@@ -22,10 +22,10 @@ module silife_matrix #(
     for (y = 0; y < HEIGHT; y = y + 1) begin : gen_cellsy
       for (x = 0; x < WIDTH; x = x + 1) begin : gen_cellsx
         silife_cell cell_instance (
-            .reset (reset || clear_cells[y*width+x]),
+            .reset (reset || clear_cells[y*WIDTH+x]),
             .clk   (clk),
             .enable(enable),
-            .revive(set_cells[y*width+x]),
+            .revive(set_cells[y*WIDTH+x]),
             .nw    (y > 0 && x > 0 ? cell_values[WIDTH*(y-1)+(x-1)] : 1'b0),
             .n     (y > 0 ? cell_values[WIDTH*(y-1)+x] : 1'b0),
             .ne    (y > 0 && x < WIDTH - 1 ? cell_values[WIDTH*(y-1)+x+1] : 1'b0),

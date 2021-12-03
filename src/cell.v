@@ -27,7 +27,7 @@ module silife_cell (
   always @(*) begin : count_neighbors
     integer j;
     living_neighbors = 3'd0;
-    for (j = 0; j < 8; j++) living_neighbors += {2'b00, neighbors[j]};
+    for (j = 0; j < 8; j = j + 1) living_neighbors = living_neighbors + {2'b00, neighbors[j]};
   end
 
   always @(posedge clk) begin
