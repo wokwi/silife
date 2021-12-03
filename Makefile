@@ -14,5 +14,10 @@ test_matrix:
 	./matrix_tb.out
 	gtkwave matrix_tb.vcd test/matrix_tb.gtkw
 
+test_scan:
+	iverilog -g2005 -I src -o scan_tb.out test/scan_tb.v src/scan.v
+	./scan_tb.out
+	gtkwave scan_tb.vcd test/scan_tb.gtkw
+
 format:
 	verible-verilog-format --inplace src/*.v test/*.v
