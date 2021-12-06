@@ -71,7 +71,10 @@ module silife #(
       .rows(io_out[HEIGHT+WIDTH-1:WIDTH])
   );
 
-  silife_matrix matrix (
+  silife_matrix #(
+      .WIDTH (WIDTH),
+      .HEIGHT(HEIGHT)
+  ) matrix (
       .reset(reset),
       .clk(clk),
       .enable(enable || clk_pulse),
@@ -83,7 +86,10 @@ module silife #(
       .cells2(cells_scan)
   );
 
-  silife_matrix_wishbone matrix_wishbone (
+  silife_matrix_wishbone #(
+      .WIDTH (WIDTH),
+      .HEIGHT(HEIGHT)
+  ) matrix_wishbone (
       .reset(reset),
       .clk  (clk),
 
