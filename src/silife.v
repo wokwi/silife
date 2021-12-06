@@ -50,9 +50,12 @@ module silife #(
   wire [23:0] wb_addr = i_wb_addr[23:0];
   wire wb_matrix_select = i_wb_addr[23:12] == 12'h001;
 
-  wire [HEIGHT*WIDTH-1:0] clear_cells;
-  wire [HEIGHT*WIDTH-1:0] set_cells;
-  wire [HEIGHT*WIDTH-1:0] cells;
+  wire [WIDTH-1:0] clear_cells;
+  wire [WIDTH-1:0] set_cells;
+  wire [WIDTH-1:0] cells;
+  wire [WIDTH-1:0] cells_scan;
+  wire [$clog2(HEIGHT)-1:0] row_select;
+  wire [$clog2(HEIGHT)-1:0] row_select_scan;
 
   silife_scan #(
       .WIDTH (WIDTH),
@@ -63,6 +66,7 @@ module silife #(
       .cells(cells),
       .invert(invert),
       .cycles(scan_cycles),
+      .row_select(row_select_scan),
       .columns(io_out[WIDTH-1:0]),
       .rows(io_out[HEIGHT+WIDTH-1:WIDTH])
   );
@@ -71,9 +75,12 @@ module silife #(
       .reset(reset),
       .clk(clk),
       .enable(enable || clk_pulse),
+      .row_select(row_select),
+      .row_select2(row_select_scan),
       .clear_cells(clear_cells),
       .set_cells(set_cells),
-      .cells(cells)
+      .cells(cells),
+      .cells2(cells_scan)
   );
 
   silife_matrix_wishbone matrix_wishbone (
@@ -83,6 +90,7 @@ module silife #(
       .clear_cells(clear_cells),
       .set_cells(set_cells),
       .cells(cells),
+      .row_select(row_select),
 
       .i_wb_cyc (i_wb_cyc),
       .i_wb_stb (i_wb_stb && wb_matrix_select),

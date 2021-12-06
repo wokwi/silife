@@ -9,25 +9,26 @@ module silife_scan #(
     input wire clk,
     input wire invert,
     input wire [15:0] cycles,
-    input wire [HEIGHT-1:0][WIDTH-1:0] cells,
-    output reg [WIDTH-1:0] columns,
-    output reg [HEIGHT-1:0] rows
+    input wire [WIDTH-1:0] cells,
+    output wire [WIDTH-1:0] columns,
+    output reg [HEIGHT-1:0] rows,
+    output reg [row_bits-1:0] row_select
 );
 
+  localparam row_bits = $clog2(HEIGHT);
+  localparam max_row_int = HEIGHT - 1;
+  localparam max_row = max_row_int[row_bits-1:0];
+  assign columns = invert ? ~cells : cells;
+
   reg [15:0] counter;
-  reg [7:0] row;
 
   integer j;
   always @(*) begin
     if (reset) begin
-      rows <= {HEIGHT{1'b0}};
-      columns <= {WIDTH{1'b0}};
+      rows = {HEIGHT{1'b0}};
     end else begin
       for (j = 0; j < HEIGHT; j++) begin
-        rows[j] = !invert ^ (row == j);
-        if (row == j) begin
-          columns = cells[row] ^ {WIDTH{invert}};
-        end
+        rows[j] = !invert ^ (row_select == j[row_bits-1:0]);
       end
     end
   end
@@ -35,10 +36,10 @@ module silife_scan #(
   always @(posedge clk) begin
     if (reset) begin
       counter <= 0;
-      row <= 0;
-    end else if (cycles) begin
+      row_select <= 0;
+    end else if (cycles != 16'b0) begin
       if (counter >= cycles) begin
-        row <= row == HEIGHT - 1 ? 0 : row + 1;
+        row_select <= (row_select == max_row) ? 0 : row_select + 1;
         counter <= 0;
       end else begin
         counter <= counter + 1;

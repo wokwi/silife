@@ -8,24 +8,32 @@ module silife_matrix #(
     input wire reset,
     input wire clk,
     input wire enable,
-    input wire [HEIGHT-1:0][WIDTH-1:0] clear_cells,
-    input wire [HEIGHT-1:0][WIDTH-1:0] set_cells,
-    output wire [HEIGHT-1:0][WIDTH-1:0] cells
+
+    /* First port: read/write */
+    input wire [$clog2(HEIGHT)-1:0] row_select,
+    input wire [WIDTH-1:0] clear_cells,
+    input wire [WIDTH-1:0] set_cells,
+    output wire [WIDTH-1:0] cells,
+
+    /* Second port: read only */
+    input wire [$clog2(HEIGHT)-1:0] row_select2,
+    output wire [WIDTH-1:0] cells2
 );
 
-  assign cells = cell_values;
+  assign cells  = cell_values[row_select];
+  assign cells2 = cell_values[row_select2];
 
   genvar y;
   genvar x;
-  wire [HEIGHT-1:0][WIDTH-1:0] cell_values;
+  wire [WIDTH-1:0] cell_values[HEIGHT-1:0];
   generate
     for (y = 0; y < HEIGHT; y = y + 1) begin : gen_cellsy
       for (x = 0; x < WIDTH; x = x + 1) begin : gen_cellsx
         silife_cell cell_instance (
-            .reset (reset || clear_cells[y][x]),
+            .reset (reset || (row_select == y && clear_cells[x])),
             .clk   (clk),
             .enable(enable),
-            .revive(set_cells[y][x]),
+            .revive(row_select == y && set_cells[x]),
             .nw    (y > 0 && x > 0 ? cell_values[y-1][x-1] : 1'b0),
             .n     (y > 0 ? cell_values[y-1][x] : 1'b0),
             .ne    (y > 0 && x < WIDTH - 1 ? cell_values[y-1][x+1] : 1'b0),

@@ -2,7 +2,6 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles
 from cocotbext.wishbone.driver import WishboneMaster, WBOp
-from math import ceil
 
 
 def bit(b): return 1 << b
@@ -60,35 +59,29 @@ class SiLifeController:
 
     async def write_matrix(self, matrix):
         value = 0
-        word_offset = 0
         bit_index = 0
+        word_offset = 0
         for row in matrix:
             for col in row:
                 if col != ' ':
                     value |= bit(bit_index)
                 bit_index += 1
-                if bit_index == 32:
-                    await self.wb_write(wb_matrix_start + word_offset, value)
-                    value = 0
-                    bit_index = 0
-                    word_offset += 4
-        if bit_index > 0:
-            value = await self.wb_write(wb_matrix_start + word_offset, value)
+            await self.wb_write(wb_matrix_start + word_offset, value)
+            word_offset += 4
+            bit_index = 0
+            value = 0
 
     async def read_matrix(self):
         result = []
-        matrix_words = ceil(matrix_width * matrix_height / 32)
-        row = ""
-        for offset in range(0, matrix_words * 4, 4):
-            value = await self.wb_read(wb_matrix_start + offset)
-            for bit_index in range(32):
+        for row_index in range(matrix_height):
+            value = await self.wb_read(wb_matrix_start + row_index * 4)
+            row = ""
+            for bit_index in range(matrix_height):
                 if value & bit(bit_index):
                     row += "*"
                 else:
                     row += " "
-                if len(row) == matrix_width and len(result) < matrix_height:
-                    result.append(row)
-                    row = ""
+            result.append(row)
         return result
 
 
@@ -114,12 +107,12 @@ async def test_add(dut):
     await silife.wb_write(reg_ctrl, 0)
 
     # Write a matrix with some initial state
-    await silife.wb_write(wb_matrix_start, 0x00440055)
-    await silife.wb_write(wb_matrix_start + 4, 0x10006678)
+    await silife.wb_write(wb_matrix_start, 0x55)
+    await silife.wb_write(wb_matrix_start + 4, 0x78)
 
     # Assert that we read the same state back
-    assert await silife.wb_read(wb_matrix_start) == 0x00440055
-    assert await silife.wb_read(wb_matrix_start + 4) == 0x10006678
+    assert await silife.wb_read(wb_matrix_start) == 0x55
+    assert await silife.wb_read(wb_matrix_start + 4) == 0x78
 
     # Now load a block with two blinkers
     await silife.write_matrix([
