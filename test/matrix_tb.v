@@ -28,14 +28,14 @@ module test_silife_matrix ();
     end
   endfunction
 
-  wire [63:0] row0 = row_to_string(clk, exec.cell_values[0]);
-  wire [63:0] row1 = row_to_string(clk, exec.cell_values[1]);
-  wire [63:0] row2 = row_to_string(clk, exec.cell_values[2]);
-  wire [63:0] row3 = row_to_string(clk, exec.cell_values[3]);
-  wire [63:0] row4 = row_to_string(clk, exec.cell_values[4]);
-  wire [63:0] row5 = row_to_string(clk, exec.cell_values[5]);
-  wire [63:0] row6 = row_to_string(clk, exec.cell_values[6]);
-  wire [63:0] row7 = row_to_string(clk, exec.cell_values[7]);
+  wire [63:0] row0 = row_to_string(clk, exec.cell_values[0+:8]);
+  wire [63:0] row1 = row_to_string(clk, exec.cell_values[8+:8]);
+  wire [63:0] row2 = row_to_string(clk, exec.cell_values[16+:8]);
+  wire [63:0] row3 = row_to_string(clk, exec.cell_values[24+:8]);
+  wire [63:0] row4 = row_to_string(clk, exec.cell_values[32+:8]);
+  wire [63:0] row5 = row_to_string(clk, exec.cell_values[40+:8]);
+  wire [63:0] row6 = row_to_string(clk, exec.cell_values[48+:8]);
+  wire [63:0] row7 = row_to_string(clk, exec.cell_values[56+:8]);
 
   silife_matrix exec (
       .reset(reset),

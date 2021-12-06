@@ -20,29 +20,39 @@ module silife_matrix #(
     output wire [WIDTH-1:0] cells2
 );
 
-  assign cells  = cell_values[row_select];
-  assign cells2 = cell_values[row_select2];
+  localparam row_bits = $clog2(HEIGHT);
+  localparam col_bits = $clog2(WIDTH);
+  localparam index_bits = row_bits + col_bits;
+
+  wire [index_bits-1:0] row_offset = {row_select, {col_bits{1'b0}}};
+  assign cells = cell_values[row_offset+:WIDTH];
+
+  wire [index_bits-1:0] row_offset2 = {row_select2, {col_bits{1'b0}}};
+  assign cells2 = cell_values[row_offset2+:WIDTH];
 
   genvar y;
   genvar x;
-  wire [WIDTH-1:0] cell_values[HEIGHT-1:0];
+  wire [(WIDTH*HEIGHT)-1:0] cell_values;
   generate
     for (y = 0; y < HEIGHT; y = y + 1) begin : gen_cellsy
       for (x = 0; x < WIDTH; x = x + 1) begin : gen_cellsx
+        localparam current_row = y * WIDTH;
+        localparam prev_row = current_row - WIDTH;
+        localparam next_row = current_row + WIDTH;
         silife_cell cell_instance (
             .reset (reset || (row_select == y && clear_cells[x])),
             .clk   (clk),
             .enable(enable),
             .revive(row_select == y && set_cells[x]),
-            .nw    (y > 0 && x > 0 ? cell_values[y-1][x-1] : 1'b0),
-            .n     (y > 0 ? cell_values[y-1][x] : 1'b0),
-            .ne    (y > 0 && x < WIDTH - 1 ? cell_values[y-1][x+1] : 1'b0),
-            .e     (x < WIDTH - 1 ? cell_values[y][x+1] : 1'b0),
-            .se    (y < HEIGHT - 1 && x < WIDTH - 1 ? cell_values[y+1][x+1] : 1'b0),
-            .s     (y < HEIGHT - 1 ? cell_values[y+1][x] : 1'b0),
-            .sw    (y < HEIGHT - 1 && x > 0 ? cell_values[y+1][x-1] : 1'b0),
-            .w     (x > 0 ? cell_values[y][x-1] : 1'b0),
-            .out   (cell_values[y][x])
+            .nw    (y > 0 && x > 0 ? cell_values[prev_row+x-1] : 1'b0),
+            .n     (y > 0 ? cell_values[prev_row+x] : 1'b0),
+            .ne    (y > 0 && x < WIDTH - 1 ? cell_values[prev_row+x+1] : 1'b0),
+            .e     (x < WIDTH - 1 ? cell_values[current_row+x+1] : 1'b0),
+            .se    (y < HEIGHT - 1 && x < WIDTH - 1 ? cell_values[next_row+x+1] : 1'b0),
+            .s     (y < HEIGHT - 1 ? cell_values[next_row+x] : 1'b0),
+            .sw    (y < HEIGHT - 1 && x > 0 ? cell_values[next_row+x-1] : 1'b0),
+            .w     (x > 0 ? cell_values[current_row+x-1] : 1'b0),
+            .out   (cell_values[current_row+x])
         );
       end
     end
