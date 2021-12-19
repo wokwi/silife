@@ -37,13 +37,21 @@ module test_silife_matrix ();
   wire [63:0] row6 = row_to_string(clk, exec.cell_values[48+:8]);
   wire [63:0] row7 = row_to_string(clk, exec.cell_values[56+:8]);
 
-  silife_matrix exec (
+  silife_matrix_8x8 exec (
       .reset(reset),
       .clk(clk),
       .enable(1'b1),
       .row_select(row_select),
       .set_cells(set_cells),
-      .cells(cells)
+      .cells(cells),
+      .i_nw(1'b0),
+      .i_ne(1'b0),
+      .i_sw(1'b0),
+      .i_se(1'b0),
+      .i_n(8'b0),
+      .i_s(8'b0),
+      .i_e(8'b0),
+      .i_w(8'b0)
   );
 
   initial begin
