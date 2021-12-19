@@ -5,7 +5,7 @@ export COCOTB_REDUCED_LOG_FMT=1
 
 all: test_silife
 
-src/matrix_8x8.v: src/matrix_gen.py
+src/matrix_8x8.v: src/gen_matrix.py
 	python $< > src/matrix_8x8.v
 
 test_cell:
