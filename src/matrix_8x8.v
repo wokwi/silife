@@ -18,10 +18,10 @@ module silife_matrix_8x8 (
     input wire i_se,
     input wire i_sw,
     input wire i_nw,
-    output reg [7:0] o_n,
-    output reg [7:0] o_w,
-    output reg [7:0] o_s,
-    output reg [7:0] o_e,
+    output wire [7:0] o_n,
+    output wire [7:0] o_w,
+    output wire [7:0] o_s,
+    output wire [7:0] o_e,
 
     /* First port: read/write */
     input  wire [2:0] row_select,
@@ -42,6 +42,8 @@ module silife_matrix_8x8 (
 
   wire [64-1:0] cell_values;
 
+  assign o_w[0] = cell_values[0];
+  assign o_n[0] = cell_values[0];
   silife_cell cell_0_0 (
       .reset (reset || (row_select == 0 && clear_cells[0])),
       .clk   (clk),
@@ -57,6 +59,8 @@ module silife_matrix_8x8 (
       .w     (i_w[0]),
       .out   (cell_values[0])
   );
+
+  assign o_n[1] = cell_values[1];
   silife_cell cell_0_1 (
       .reset (reset || (row_select == 0 && clear_cells[1])),
       .clk   (clk),
@@ -72,6 +76,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[0]),
       .out   (cell_values[1])
   );
+
+  assign o_n[2] = cell_values[2];
   silife_cell cell_0_2 (
       .reset (reset || (row_select == 0 && clear_cells[2])),
       .clk   (clk),
@@ -87,6 +93,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[1]),
       .out   (cell_values[2])
   );
+
+  assign o_n[3] = cell_values[3];
   silife_cell cell_0_3 (
       .reset (reset || (row_select == 0 && clear_cells[3])),
       .clk   (clk),
@@ -102,6 +110,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[2]),
       .out   (cell_values[3])
   );
+
+  assign o_n[4] = cell_values[4];
   silife_cell cell_0_4 (
       .reset (reset || (row_select == 0 && clear_cells[4])),
       .clk   (clk),
@@ -117,6 +127,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[3]),
       .out   (cell_values[4])
   );
+
+  assign o_n[5] = cell_values[5];
   silife_cell cell_0_5 (
       .reset (reset || (row_select == 0 && clear_cells[5])),
       .clk   (clk),
@@ -132,6 +144,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[4]),
       .out   (cell_values[5])
   );
+
+  assign o_n[6] = cell_values[6];
   silife_cell cell_0_6 (
       .reset (reset || (row_select == 0 && clear_cells[6])),
       .clk   (clk),
@@ -147,6 +161,9 @@ module silife_matrix_8x8 (
       .w     (cell_values[5]),
       .out   (cell_values[6])
   );
+
+  assign o_e[0] = cell_values[7];
+  assign o_n[7] = cell_values[7];
   silife_cell cell_0_7 (
       .reset (reset || (row_select == 0 && clear_cells[7])),
       .clk   (clk),
@@ -162,6 +179,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[6]),
       .out   (cell_values[7])
   );
+
+  assign o_w[1] = cell_values[8];
   silife_cell cell_1_0 (
       .reset (reset || (row_select == 1 && clear_cells[0])),
       .clk   (clk),
@@ -177,6 +196,7 @@ module silife_matrix_8x8 (
       .w     (i_w[1]),
       .out   (cell_values[8])
   );
+
   silife_cell cell_1_1 (
       .reset (reset || (row_select == 1 && clear_cells[1])),
       .clk   (clk),
@@ -192,6 +212,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[8]),
       .out   (cell_values[9])
   );
+
   silife_cell cell_1_2 (
       .reset (reset || (row_select == 1 && clear_cells[2])),
       .clk   (clk),
@@ -207,6 +228,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[9]),
       .out   (cell_values[10])
   );
+
   silife_cell cell_1_3 (
       .reset (reset || (row_select == 1 && clear_cells[3])),
       .clk   (clk),
@@ -222,6 +244,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[10]),
       .out   (cell_values[11])
   );
+
   silife_cell cell_1_4 (
       .reset (reset || (row_select == 1 && clear_cells[4])),
       .clk   (clk),
@@ -237,6 +260,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[11]),
       .out   (cell_values[12])
   );
+
   silife_cell cell_1_5 (
       .reset (reset || (row_select == 1 && clear_cells[5])),
       .clk   (clk),
@@ -252,6 +276,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[12]),
       .out   (cell_values[13])
   );
+
   silife_cell cell_1_6 (
       .reset (reset || (row_select == 1 && clear_cells[6])),
       .clk   (clk),
@@ -267,6 +292,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[13]),
       .out   (cell_values[14])
   );
+
+  assign o_e[1] = cell_values[15];
   silife_cell cell_1_7 (
       .reset (reset || (row_select == 1 && clear_cells[7])),
       .clk   (clk),
@@ -282,6 +309,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[14]),
       .out   (cell_values[15])
   );
+
+  assign o_w[2] = cell_values[16];
   silife_cell cell_2_0 (
       .reset (reset || (row_select == 2 && clear_cells[0])),
       .clk   (clk),
@@ -297,6 +326,7 @@ module silife_matrix_8x8 (
       .w     (i_w[2]),
       .out   (cell_values[16])
   );
+
   silife_cell cell_2_1 (
       .reset (reset || (row_select == 2 && clear_cells[1])),
       .clk   (clk),
@@ -312,6 +342,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[16]),
       .out   (cell_values[17])
   );
+
   silife_cell cell_2_2 (
       .reset (reset || (row_select == 2 && clear_cells[2])),
       .clk   (clk),
@@ -327,6 +358,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[17]),
       .out   (cell_values[18])
   );
+
   silife_cell cell_2_3 (
       .reset (reset || (row_select == 2 && clear_cells[3])),
       .clk   (clk),
@@ -342,6 +374,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[18]),
       .out   (cell_values[19])
   );
+
   silife_cell cell_2_4 (
       .reset (reset || (row_select == 2 && clear_cells[4])),
       .clk   (clk),
@@ -357,6 +390,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[19]),
       .out   (cell_values[20])
   );
+
   silife_cell cell_2_5 (
       .reset (reset || (row_select == 2 && clear_cells[5])),
       .clk   (clk),
@@ -372,6 +406,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[20]),
       .out   (cell_values[21])
   );
+
   silife_cell cell_2_6 (
       .reset (reset || (row_select == 2 && clear_cells[6])),
       .clk   (clk),
@@ -387,6 +422,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[21]),
       .out   (cell_values[22])
   );
+
+  assign o_e[2] = cell_values[23];
   silife_cell cell_2_7 (
       .reset (reset || (row_select == 2 && clear_cells[7])),
       .clk   (clk),
@@ -402,6 +439,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[22]),
       .out   (cell_values[23])
   );
+
+  assign o_w[3] = cell_values[24];
   silife_cell cell_3_0 (
       .reset (reset || (row_select == 3 && clear_cells[0])),
       .clk   (clk),
@@ -417,6 +456,7 @@ module silife_matrix_8x8 (
       .w     (i_w[3]),
       .out   (cell_values[24])
   );
+
   silife_cell cell_3_1 (
       .reset (reset || (row_select == 3 && clear_cells[1])),
       .clk   (clk),
@@ -432,6 +472,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[24]),
       .out   (cell_values[25])
   );
+
   silife_cell cell_3_2 (
       .reset (reset || (row_select == 3 && clear_cells[2])),
       .clk   (clk),
@@ -447,6 +488,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[25]),
       .out   (cell_values[26])
   );
+
   silife_cell cell_3_3 (
       .reset (reset || (row_select == 3 && clear_cells[3])),
       .clk   (clk),
@@ -462,6 +504,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[26]),
       .out   (cell_values[27])
   );
+
   silife_cell cell_3_4 (
       .reset (reset || (row_select == 3 && clear_cells[4])),
       .clk   (clk),
@@ -477,6 +520,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[27]),
       .out   (cell_values[28])
   );
+
   silife_cell cell_3_5 (
       .reset (reset || (row_select == 3 && clear_cells[5])),
       .clk   (clk),
@@ -492,6 +536,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[28]),
       .out   (cell_values[29])
   );
+
   silife_cell cell_3_6 (
       .reset (reset || (row_select == 3 && clear_cells[6])),
       .clk   (clk),
@@ -507,6 +552,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[29]),
       .out   (cell_values[30])
   );
+
+  assign o_e[3] = cell_values[31];
   silife_cell cell_3_7 (
       .reset (reset || (row_select == 3 && clear_cells[7])),
       .clk   (clk),
@@ -522,6 +569,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[30]),
       .out   (cell_values[31])
   );
+
+  assign o_w[4] = cell_values[32];
   silife_cell cell_4_0 (
       .reset (reset || (row_select == 4 && clear_cells[0])),
       .clk   (clk),
@@ -537,6 +586,7 @@ module silife_matrix_8x8 (
       .w     (i_w[4]),
       .out   (cell_values[32])
   );
+
   silife_cell cell_4_1 (
       .reset (reset || (row_select == 4 && clear_cells[1])),
       .clk   (clk),
@@ -552,6 +602,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[32]),
       .out   (cell_values[33])
   );
+
   silife_cell cell_4_2 (
       .reset (reset || (row_select == 4 && clear_cells[2])),
       .clk   (clk),
@@ -567,6 +618,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[33]),
       .out   (cell_values[34])
   );
+
   silife_cell cell_4_3 (
       .reset (reset || (row_select == 4 && clear_cells[3])),
       .clk   (clk),
@@ -582,6 +634,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[34]),
       .out   (cell_values[35])
   );
+
   silife_cell cell_4_4 (
       .reset (reset || (row_select == 4 && clear_cells[4])),
       .clk   (clk),
@@ -597,6 +650,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[35]),
       .out   (cell_values[36])
   );
+
   silife_cell cell_4_5 (
       .reset (reset || (row_select == 4 && clear_cells[5])),
       .clk   (clk),
@@ -612,6 +666,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[36]),
       .out   (cell_values[37])
   );
+
   silife_cell cell_4_6 (
       .reset (reset || (row_select == 4 && clear_cells[6])),
       .clk   (clk),
@@ -627,6 +682,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[37]),
       .out   (cell_values[38])
   );
+
+  assign o_e[4] = cell_values[39];
   silife_cell cell_4_7 (
       .reset (reset || (row_select == 4 && clear_cells[7])),
       .clk   (clk),
@@ -642,6 +699,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[38]),
       .out   (cell_values[39])
   );
+
+  assign o_w[5] = cell_values[40];
   silife_cell cell_5_0 (
       .reset (reset || (row_select == 5 && clear_cells[0])),
       .clk   (clk),
@@ -657,6 +716,7 @@ module silife_matrix_8x8 (
       .w     (i_w[5]),
       .out   (cell_values[40])
   );
+
   silife_cell cell_5_1 (
       .reset (reset || (row_select == 5 && clear_cells[1])),
       .clk   (clk),
@@ -672,6 +732,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[40]),
       .out   (cell_values[41])
   );
+
   silife_cell cell_5_2 (
       .reset (reset || (row_select == 5 && clear_cells[2])),
       .clk   (clk),
@@ -687,6 +748,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[41]),
       .out   (cell_values[42])
   );
+
   silife_cell cell_5_3 (
       .reset (reset || (row_select == 5 && clear_cells[3])),
       .clk   (clk),
@@ -702,6 +764,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[42]),
       .out   (cell_values[43])
   );
+
   silife_cell cell_5_4 (
       .reset (reset || (row_select == 5 && clear_cells[4])),
       .clk   (clk),
@@ -717,6 +780,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[43]),
       .out   (cell_values[44])
   );
+
   silife_cell cell_5_5 (
       .reset (reset || (row_select == 5 && clear_cells[5])),
       .clk   (clk),
@@ -732,6 +796,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[44]),
       .out   (cell_values[45])
   );
+
   silife_cell cell_5_6 (
       .reset (reset || (row_select == 5 && clear_cells[6])),
       .clk   (clk),
@@ -747,6 +812,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[45]),
       .out   (cell_values[46])
   );
+
+  assign o_e[5] = cell_values[47];
   silife_cell cell_5_7 (
       .reset (reset || (row_select == 5 && clear_cells[7])),
       .clk   (clk),
@@ -762,6 +829,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[46]),
       .out   (cell_values[47])
   );
+
+  assign o_w[6] = cell_values[48];
   silife_cell cell_6_0 (
       .reset (reset || (row_select == 6 && clear_cells[0])),
       .clk   (clk),
@@ -777,6 +846,7 @@ module silife_matrix_8x8 (
       .w     (i_w[6]),
       .out   (cell_values[48])
   );
+
   silife_cell cell_6_1 (
       .reset (reset || (row_select == 6 && clear_cells[1])),
       .clk   (clk),
@@ -792,6 +862,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[48]),
       .out   (cell_values[49])
   );
+
   silife_cell cell_6_2 (
       .reset (reset || (row_select == 6 && clear_cells[2])),
       .clk   (clk),
@@ -807,6 +878,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[49]),
       .out   (cell_values[50])
   );
+
   silife_cell cell_6_3 (
       .reset (reset || (row_select == 6 && clear_cells[3])),
       .clk   (clk),
@@ -822,6 +894,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[50]),
       .out   (cell_values[51])
   );
+
   silife_cell cell_6_4 (
       .reset (reset || (row_select == 6 && clear_cells[4])),
       .clk   (clk),
@@ -837,6 +910,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[51]),
       .out   (cell_values[52])
   );
+
   silife_cell cell_6_5 (
       .reset (reset || (row_select == 6 && clear_cells[5])),
       .clk   (clk),
@@ -852,6 +926,7 @@ module silife_matrix_8x8 (
       .w     (cell_values[52]),
       .out   (cell_values[53])
   );
+
   silife_cell cell_6_6 (
       .reset (reset || (row_select == 6 && clear_cells[6])),
       .clk   (clk),
@@ -867,6 +942,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[53]),
       .out   (cell_values[54])
   );
+
+  assign o_e[6] = cell_values[55];
   silife_cell cell_6_7 (
       .reset (reset || (row_select == 6 && clear_cells[7])),
       .clk   (clk),
@@ -882,6 +959,9 @@ module silife_matrix_8x8 (
       .w     (cell_values[54]),
       .out   (cell_values[55])
   );
+
+  assign o_w[7] = cell_values[56];
+  assign o_s[0] = cell_values[56];
   silife_cell cell_7_0 (
       .reset (reset || (row_select == 7 && clear_cells[0])),
       .clk   (clk),
@@ -897,6 +977,8 @@ module silife_matrix_8x8 (
       .w     (i_w[7]),
       .out   (cell_values[56])
   );
+
+  assign o_s[1] = cell_values[57];
   silife_cell cell_7_1 (
       .reset (reset || (row_select == 7 && clear_cells[1])),
       .clk   (clk),
@@ -912,6 +994,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[56]),
       .out   (cell_values[57])
   );
+
+  assign o_s[2] = cell_values[58];
   silife_cell cell_7_2 (
       .reset (reset || (row_select == 7 && clear_cells[2])),
       .clk   (clk),
@@ -927,6 +1011,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[57]),
       .out   (cell_values[58])
   );
+
+  assign o_s[3] = cell_values[59];
   silife_cell cell_7_3 (
       .reset (reset || (row_select == 7 && clear_cells[3])),
       .clk   (clk),
@@ -942,6 +1028,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[58]),
       .out   (cell_values[59])
   );
+
+  assign o_s[4] = cell_values[60];
   silife_cell cell_7_4 (
       .reset (reset || (row_select == 7 && clear_cells[4])),
       .clk   (clk),
@@ -957,6 +1045,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[59]),
       .out   (cell_values[60])
   );
+
+  assign o_s[5] = cell_values[61];
   silife_cell cell_7_5 (
       .reset (reset || (row_select == 7 && clear_cells[5])),
       .clk   (clk),
@@ -972,6 +1062,8 @@ module silife_matrix_8x8 (
       .w     (cell_values[60]),
       .out   (cell_values[61])
   );
+
+  assign o_s[6] = cell_values[62];
   silife_cell cell_7_6 (
       .reset (reset || (row_select == 7 && clear_cells[6])),
       .clk   (clk),
@@ -987,6 +1079,9 @@ module silife_matrix_8x8 (
       .w     (cell_values[61]),
       .out   (cell_values[62])
   );
+
+  assign o_e[7] = cell_values[63];
+  assign o_s[7] = cell_values[63];
   silife_cell cell_7_7 (
       .reset (reset || (row_select == 7 && clear_cells[7])),
       .clk   (clk),
@@ -1002,5 +1097,6 @@ module silife_matrix_8x8 (
       .w     (cell_values[62]),
       .out   (cell_values[63])
   );
+
 
 endmodule

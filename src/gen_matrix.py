@@ -27,10 +27,10 @@ module silife_matrix_{width}x{height} (
     input wire i_se,
     input wire i_sw,
     input wire i_nw,
-    output reg [{width_minus1}:0] o_n,
-    output reg [{height_minus1}:0] o_w,
-    output reg [{width_minus1}:0] o_s,
-    output reg [{height_minus1}:0] o_e,
+    output wire [{width_minus1}:0] o_n,
+    output wire [{height_minus1}:0] o_w,
+    output wire [{width_minus1}:0] o_s,
+    output wire [{height_minus1}:0] o_e,
 
     /* First port: read/write */
     input  wire [{row_select_bits}:0] row_select,
@@ -100,10 +100,11 @@ def cell(y, x):
 cells = ""
 for y in range(width):
     for x in range(height):
+        index = y * width + x
         params = {
             "x": x,
             "y": y,
-            "index": y * width + x,
+            "index": index,
             "nw": cell(y - 1, x - 1),
             "n": cell(y - 1, x),
             "ne": cell(y - 1, x + 1),
@@ -113,7 +114,15 @@ for y in range(width):
             "sw": cell(y + 1, x - 1),
             "w": cell(y, x - 1),
         }
-        cells += "  " + cell_template.format(**params).strip() + "\n"
+        if x == 0:
+            cells += "  assign o_w[{}] = cell_values[{}];\n".format(y, index)
+        if x == width - 1:
+            cells += "  assign o_e[{}] = cell_values[{}];\n".format(y, index)
+        if y == 0:
+            cells += "  assign o_n[{}] = cell_values[{}];\n".format(x, index)
+        if y == height - 1:
+            cells += "  assign o_s[{}] = cell_values[{}];\n".format(x, index)
+        cells += "  " + cell_template.format(**params).strip() + "\n\n"
 
 width_bits = ceil(log2(width))
 height_bits = ceil(log2(height))
