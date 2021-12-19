@@ -2,10 +2,15 @@
 # SPDX-License-Identifier: MIT
 
 from math import log2, ceil
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--sub_size", default=8, type=int)
+args = parser.parse_args()
 
 width = 2
 height = 2
-sub_size = 8
+sub_size = args.sub_size
 
 template = """
 // SPDX-FileCopyrightText: © 2021 Uri Shaked <uri@wokwi.com>

@@ -3,10 +3,23 @@
 
 export COCOTB_REDUCED_LOG_FMT=1
 
-all: test_silife
+GENERATED_SOURCES= src/matrix_8x8.v src/matrix_16x16_ho.v src/matrix_32x32_ho.v
+
+all: generate test_silife
+
+generate: $(GENERATED_SOURCES)
 
 src/matrix_8x8.v: src/gen_matrix.py
-	python $< > src/matrix_8x8.v
+	python $< > $@
+	verible-verilog-format --inplace $@
+
+src/matrix_16x16_ho.v: src/gen_highorder_matrix.py
+	python $< --sub_size 8 > $@
+	verible-verilog-format --inplace $@
+
+src/matrix_32x32_ho.v: src/gen_highorder_matrix.py
+	python $< --sub_size 16 > $@
+	verible-verilog-format --inplace $@
 
 test_cell:
 	iverilog -g2005 -I src -o cell_tb.out test/cell_tb.v src/cell.v

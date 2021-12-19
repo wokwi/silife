@@ -24,13 +24,13 @@ module silife_matrix_16x16 (
     output wire [15:0] o_e,
 
     /* First port: read/write */
-    input  wire [3:0] row_select,
+    input  wire [ 3:0] row_select,
     input  wire [15:0] clear_cells,
     input  wire [15:0] set_cells,
     output wire [15:0] cells,
 
     /* Second port: read only */
-    input  wire [3:0] row_select2,
+    input  wire [ 3:0] row_select2,
     output wire [15:0] cells2
 );
 
