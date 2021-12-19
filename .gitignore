@@ -1,3 +1,4 @@
+pin_order.cfg
 *.vcd
 *.out
 *.pyc
