@@ -98,7 +98,7 @@ async def create_silife(dut):
 
 
 @cocotb.test()
-async def test_add(dut):
+async def test_life(dut):
     silife = await create_silife(dut)
     clock_sig = await make_clock(dut, 10)
     await reset(dut)
