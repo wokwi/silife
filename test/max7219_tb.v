@@ -44,10 +44,10 @@ module test_silife_max7219 ();
     matrix_cells <= 0;
     #10 reset <= 0;
     #20 enable <= 1;
-    matrix_cells[0] = 8'h20;
-    matrix_cells[4] = 32'h54443424;
-    matrix_cells[6] = 8'h66;
-    matrix_cells[7] = 8'haa;
+    matrix_cells[0]   = 8'h20;
+    matrix_cells[4]   = 32'h54443424;
+    matrix_cells[6]   = 8'h66;
+    matrix_cells[7]   = 8'haa;
     matrix_cells[8+4] = 32'h55453525;
     #180000 $finish();
   end

@@ -76,8 +76,7 @@ module silife_max7219 #(
       column_index <= 0;
       max7219_enabled <= 0;
       o_cs <= 1;
-    end
-    begin
+    end else begin
       spi_start <= 0;
       if (!i_enable) begin
         state <= StateInit;
