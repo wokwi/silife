@@ -6,8 +6,8 @@
 `timescale 1ns / 1ps
 
 module silife #(
-    parameter WIDTH  = 8,
-    parameter HEIGHT = 8
+    parameter WIDTH  = 32,
+    parameter HEIGHT = 32
 ) (
     input wire reset,
     input wire clk,
@@ -116,7 +116,7 @@ module silife #(
       .o_row_select(row_select_scan)
   );
 
-  silife_matrix_8x8 matrix (
+  silife_matrix_32x32 matrix (
       .reset(reset),
       .clk(clk),
       .enable(enable || clk_pulse),
