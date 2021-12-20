@@ -57,6 +57,52 @@ module silife #(
   wire [$clog2(HEIGHT)-1:0] row_select;
   wire [$clog2(HEIGHT)-1:0] row_select_scan;
 
+`ifdef SILIFE_TEST
+  /* Pretty output for the test bench */
+  localparam string_bits = WIDTH * 8;
+  integer i;
+  function [string_bits-1:0] row_to_string(input clk, input [WIDTH-1:0] row);
+    begin
+      for (i = 0; i < WIDTH; i = i + 1) begin
+        row_to_string[i*8+:8] = clk ? (row[WIDTH-1-i] ? "*" : " ") : 8'bz;
+      end
+    end
+  endfunction
+
+  wire [string_bits-1:0] row00 = row_to_string(clk, matrix.cell_values['d00*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row01 = row_to_string(clk, matrix.cell_values['d01*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row02 = row_to_string(clk, matrix.cell_values['d02*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row03 = row_to_string(clk, matrix.cell_values['d03*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row04 = row_to_string(clk, matrix.cell_values['d04*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row05 = row_to_string(clk, matrix.cell_values['d05*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row06 = row_to_string(clk, matrix.cell_values['d06*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row07 = row_to_string(clk, matrix.cell_values['d07*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row08 = row_to_string(clk, matrix.cell_values['d08*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row09 = row_to_string(clk, matrix.cell_values['d09*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row10 = row_to_string(clk, matrix.cell_values['d10*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row11 = row_to_string(clk, matrix.cell_values['d11*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row12 = row_to_string(clk, matrix.cell_values['d12*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row13 = row_to_string(clk, matrix.cell_values['d13*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row14 = row_to_string(clk, matrix.cell_values['d14*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row15 = row_to_string(clk, matrix.cell_values['d15*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row16 = row_to_string(clk, matrix.cell_values['d16*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row17 = row_to_string(clk, matrix.cell_values['d17*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row18 = row_to_string(clk, matrix.cell_values['d18*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row19 = row_to_string(clk, matrix.cell_values['d19*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row20 = row_to_string(clk, matrix.cell_values['d20*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row21 = row_to_string(clk, matrix.cell_values['d21*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row22 = row_to_string(clk, matrix.cell_values['d22*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row23 = row_to_string(clk, matrix.cell_values['d23*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row24 = row_to_string(clk, matrix.cell_values['d24*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row25 = row_to_string(clk, matrix.cell_values['d25*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row26 = row_to_string(clk, matrix.cell_values['d26*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row27 = row_to_string(clk, matrix.cell_values['d27*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row28 = row_to_string(clk, matrix.cell_values['d28*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row29 = row_to_string(clk, matrix.cell_values['d29*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row30 = row_to_string(clk, matrix.cell_values['d30*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row31 = row_to_string(clk, matrix.cell_values['d31*WIDTH+:WIDTH]);
+`endif
+
   silife_scan #(
       .WIDTH (WIDTH),
       .HEIGHT(HEIGHT)
@@ -85,10 +131,10 @@ module silife #(
       .i_ne(1'b0),
       .i_sw(1'b0),
       .i_se(1'b0),
-      .i_n(8'b0),
-      .i_s(8'b0),
-      .i_e(8'b0),
-      .i_w(8'b0)
+      .i_n({WIDTH{1'b0}}),
+      .i_s({WIDTH{1'b0}}),
+      .i_e({HEIGHT{1'b0}}),
+      .i_w({HEIGHT{1'b0}})
   );
 
   silife_matrix_wishbone #(

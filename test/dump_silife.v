@@ -1,3 +1,5 @@
+`define SILIFE_TEST
+
 module dump ();
   initial begin
     $dumpfile("silife_test.vcd");

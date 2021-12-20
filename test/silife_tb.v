@@ -4,6 +4,7 @@
 `timescale 1ns / 1ps
 //
 `default_nettype none
+`define SILIFE_TEST
 
 module test_silife ();
   reg reset;
