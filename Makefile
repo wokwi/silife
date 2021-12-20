@@ -43,7 +43,7 @@ test_max7219:
 	gtkwave max7219_tb.vcd test/max7219_tb.gtkw
 
 test_silife:
-	iverilog -I src -s silife -s dump -o silife_test.out test/dump_silife.v src/silife.v src/cell.v src/matrix_8x8.v src/matrix_16x16_ho.v src/matrix_32x32_ho.v src/matrix_wishbone.v src/scan.v
+	iverilog -I src -s silife -s dump -o silife_test.out test/dump_silife.v src/silife.v src/cell.v src/matrix_8x8.v src/matrix_16x16_ho.v src/matrix_32x32_ho.v src/matrix_wishbone.v src/max7219.v src/spi_master.v
 	MODULE=test.test_silife vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus ./silife_test.out
 	gtkwave silife_test.vcd test/silife_test.gtkw
 

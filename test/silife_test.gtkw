@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Mon Dec 20 17:29:27 2021
+[*] Mon Dec 20 17:49:19 2021
 [*]
 [dumpfile] "/mnt/c/p/silife/silife_test.vcd"
-[dumpfile_mtime] "Mon Dec 20 17:29:02 2021"
-[dumpfile_size] 383700
+[dumpfile_mtime] "Mon Dec 20 17:48:03 2021"
+[dumpfile_size] 390648
 [savefile] "/mnt/c/p/silife/test/silife_test.gtkw"
-[timestart] 12466400
+[timestart] 0
 [size] 1908 999
 [pos] -1 -1
-*-16.811926 12678000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-20.854675 3564000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] silife.
 [sst_width] 214
 [signals_width] 197
@@ -35,5 +35,13 @@ silife.row04[63:0]
 silife.row05[63:0]
 silife.row06[63:0]
 silife.row07[63:0]
+@200
+-
+@28
+silife.max7219_enable
+silife.spi_cs
+silife.spi_mosi
+@29
+silife.spi_sck
 [pattern_trace] 1
 [pattern_trace] 0

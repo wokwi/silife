@@ -12,12 +12,10 @@ module silife #(
     input wire reset,
     input wire clk,
 
-    // GPIO
-    output wire [WIDTH+HEIGHT-1:0] io_out,
-    output wire [WIDTH+HEIGHT-1:0] io_oeb,
-
-    // Logic anaylzer
-    output wire [31:0] la_data_out,
+    // SPI
+    output wire spi_cs,
+    output wire spi_mosi,
+    output wire spi_sck,
 
     // Wishbone interface
     input  wire        i_wb_cyc,   // wishbone transaction
@@ -30,15 +28,16 @@ module silife #(
 );
 
   reg enable;
-  reg invert;
   reg clk_pulse;
   reg [15:0] scan_cycles;
 
   localparam REG_CTRL = 24'h000;
   localparam io_pins = WIDTH + HEIGHT;
 
-  assign io_oeb = {io_pins{1'b0}};
+  /* MAX7219 interface */
+  reg max7219_enable;
 
+  /* Wishbone interface */
   reg wb_read_ack;
   reg wb_write_ack;
   wire wb_matrix_ack;
@@ -103,18 +102,18 @@ module silife #(
   wire [string_bits-1:0] row31 = row_to_string(clk, matrix.cell_values['d31*WIDTH+:WIDTH]);
 `endif
 
-  silife_scan #(
+  silife_max7219 #(
       .WIDTH (WIDTH),
       .HEIGHT(HEIGHT)
-  ) scan (
+  ) max7219 (
       .reset(reset),
       .clk(clk),
-      .cells(cells),
-      .invert(invert),
-      .cycles(scan_cycles),
-      .row_select(row_select_scan),
-      .columns(io_out[WIDTH-1:0]),
-      .rows(io_out[HEIGHT+WIDTH-1:WIDTH])
+      .i_enable(max7219_enable),
+      .i_cells(cells_scan),
+      .o_cs(spi_cs),
+      .o_sck(spi_sck),
+      .o_mosi(spi_mosi),
+      .o_row_select(row_select_scan)
   );
 
   silife_matrix_8x8 matrix (
@@ -161,11 +160,12 @@ module silife #(
   // Wishbone reads
   always @(posedge clk) begin
     if (reset) begin
-      o_wb_data   <= 0;
+      o_wb_data <= 0;
       wb_read_ack <= 0;
+      max7219_enable <= 0;
     end else if (wb_read) begin
       case (wb_addr)
-        REG_CTRL: o_wb_data <= {30'b0, invert, enable};
+        REG_CTRL: o_wb_data <= {29'b0, max7219_enable, 1'b0, enable};
         default: begin
           o_wb_data <= wb_matrix_data;
         end
@@ -179,7 +179,6 @@ module silife #(
   always @(posedge clk) begin
     if (reset) begin
       enable <= 0;
-      invert <= 0;
       clk_pulse <= 0;
       scan_cycles <= 16'd3;
     end else begin
@@ -187,8 +186,8 @@ module silife #(
         case (wb_addr)
           REG_CTRL: begin
             enable <= i_wb_data[0];
-            invert <= i_wb_data[1];
-            clk_pulse <= i_wb_data[2];
+            clk_pulse <= i_wb_data[1];
+            max7219_enable <= i_wb_data[2];
           end
         endcase
         wb_write_ack <= 1;

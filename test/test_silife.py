@@ -14,8 +14,8 @@ matrix_width = 8
 # Wishbone bus registers
 reg_ctrl = 0x3000_0000
 REG_CTRL_EN = bit(0)
-REG_CTRL_INVERT = bit(1)
-REG_CTRL_PULSE = bit(2)
+REG_CTRL_PULSE = bit(1)
+REG_CTRL_MAX7219_EN = bit(2)
 wb_matrix_start = 0x3000_1000
 
 wishbone_signals = {
@@ -106,6 +106,9 @@ async def test_add(dut):
     # Disable the Game of Life
     await silife.wb_write(reg_ctrl, 0)
 
+    # Enable MAX7219 output
+    await silife.wb_write(reg_ctrl, REG_CTRL_MAX7219_EN)
+
     # Write a matrix with some initial state
     await silife.wb_write(wb_matrix_start, 0x55)
     await silife.wb_write(wb_matrix_start + 4, 0x78)
@@ -127,7 +130,7 @@ async def test_add(dut):
     ])
 
     # Run one step, observe the result
-    await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
+    await silife.wb_write(reg_ctrl, REG_CTRL_PULSE | REG_CTRL_MAX7219_EN)
     assert await silife.read_matrix() == [
         "  *     ",
         "  *     ",
@@ -140,7 +143,7 @@ async def test_add(dut):
     ]
 
     # One more step - we should be back to the initial state
-    await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
+    await silife.wb_write(reg_ctrl, REG_CTRL_PULSE | REG_CTRL_MAX7219_EN)
     assert await silife.read_matrix() == [
         "        ",
         " ***    ",
