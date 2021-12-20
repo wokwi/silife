@@ -36,6 +36,12 @@ test_scan:
 	./scan_tb.out
 	gtkwave scan_tb.vcd test/scan_tb.gtkw
 
+test_max7219:
+	iverilog -g2005 -I src -o max7219_tb.out test/max7219_tb.v src/max7219.v src/spi_master.v
+	./max7219_tb.out
+	python test/vcd_to_wokwi.py > max7219_tb_wokwi.vcd
+	gtkwave max7219_tb.vcd test/max7219_tb.gtkw
+
 test_silife:
 	iverilog -I src -s silife -s dump -o silife_test.out src/silife.v src/cell.v src/matrix_8x8.v src/matrix_wishbone.v src/scan.v test/dump_silife.v
 	MODULE=test.test_silife vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus ./silife_test.out
