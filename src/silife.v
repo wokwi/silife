@@ -162,7 +162,6 @@ module silife #(
     if (reset) begin
       o_wb_data <= 0;
       wb_read_ack <= 0;
-      max7219_enable <= 0;
     end else if (wb_read) begin
       case (wb_addr)
         REG_CTRL: o_wb_data <= {29'b0, max7219_enable, 1'b0, enable};
@@ -181,6 +180,7 @@ module silife #(
       enable <= 0;
       clk_pulse <= 0;
       scan_cycles <= 16'd3;
+      max7219_enable <= 0;
     end else begin
       if (wb_write) begin
         case (wb_addr)
