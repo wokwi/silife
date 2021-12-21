@@ -15,6 +15,7 @@ module silife_max7219 #(
     input wire i_enable,
     input wire [WIDTH-1:0] i_cells,
     input wire [3:0] i_brightness,
+    input wire i_reverse_columns,
 
     // MAX7219 SPI interface
     output reg  o_cs,
@@ -44,6 +45,16 @@ module silife_max7219 #(
   reg max7219_enabled;
   wire [3:0] max7219_row = o_row_select[2:0] + 1;
 
+  function [7:0] reverse8(input [7:0] value);
+    integer i;
+    for (i = 0; i < 8; i = i + 1) begin
+      reverse8[7-i] = value[i];
+    end
+  endfunction
+
+  wire [7:0] row_data = i_cells[column_offset+:8];
+  wire [7:0] row_data_rev = reverse8(row_data);
+
   silife_spi_master spim (
       .reset(reset),
       .clk(clk),
@@ -65,7 +76,7 @@ module silife_max7219 #(
           3: spi_word <= {8'h0a, 4'b0000, i_brightness};  // Configure max brightness
         endcase
       end
-      StateData:   spi_word = {4'b0, max7219_row, i_cells[column_offset+:8]};
+      StateData:   spi_word = {4'b0, max7219_row, i_reverse_columns ? row_data_rev : row_data};
       StateEnable: spi_word <= {8'h0c, 8'h01};  // Enable display
     endcase
   end
@@ -75,7 +86,7 @@ module silife_max7219 #(
       state <= StateInit;
       init_index <= 0;
       segment_index <= 0;
-      o_row_select <= 0;
+      o_row_select <= {2'b11, 3'b000};
       column_index <= 0;
       max7219_enabled <= 0;
       o_cs <= 1;
@@ -88,7 +99,7 @@ module silife_max7219 #(
           StateInit: begin
             init_index <= 0;
             segment_index <= 4'h0;
-            o_row_select <= 5'h0;
+            o_row_select <= {2'b11, 3'b000};
             column_index <= 2'h0;
             max7219_enabled <= 0;
             o_cs <= 1;
@@ -105,7 +116,7 @@ module silife_max7219 #(
               segment_index <= 4'hf;
               if (!o_cs) begin
                 column_index <= 2'h0;
-                o_row_select <= 5'h0;
+                o_row_select <= {2'b11, 3'b000};
                 o_cs <= 1;
                 spi_start <= 0;
               end else begin
@@ -123,7 +134,7 @@ module silife_max7219 #(
             column_index <= column_index + 1;
             segment_index <= segment_index + 1;
             if (column_index == 2'h3) begin
-              o_row_select[4:3] <= o_row_select[4:3] + 1;
+              o_row_select[4:3] <= o_row_select[4:3] - 1;
             end
             if (segment_index == 4'hf) begin
               if (!o_cs) begin
@@ -148,7 +159,7 @@ module silife_max7219 #(
             end else begin
               if (!o_cs) begin
                 column_index <= 2'h0;
-                o_row_select <= 5'h0;
+                o_row_select <= {2'b11, 3'b000};
                 o_cs <= 1;
               end else begin
                 max7219_enabled <= 1;
