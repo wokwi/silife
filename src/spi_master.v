@@ -29,7 +29,7 @@ module silife_spi_master (
     end else begin
       if (finish) begin
         finish <= 0;
-        o_sck <= 0;
+        o_sck  <= 0;
         o_busy <= 0;
       end else if (o_busy) begin
         o_sck <= !o_sck;
