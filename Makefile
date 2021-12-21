@@ -39,7 +39,8 @@ test_scan:
 test_max7219:
 	iverilog -g2005 -I src -o max7219_tb.out test/max7219_tb.v src/max7219.v src/spi_master.v
 	./max7219_tb.out
-	python test/vcd_to_wokwi.py > max7219_tb_wokwi.vcd
+	python test/vcd_to_pulseview.py > max7219_tb_pv.vcd
+	python test/vcd_to_cpp.py > max7219_vcd_values.h
 	gtkwave max7219_tb.vcd test/max7219_tb.gtkw
 
 test_silife:

@@ -3,3 +3,4 @@ pin_order.cfg
 *.out
 *.pyc
 results.xml
+max7219_vcd_values.h
