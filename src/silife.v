@@ -33,6 +33,7 @@ module silife #(
 
   localparam REG_CTRL = 24'h000;
   localparam REG_MAX7219 = 24'h004;
+  localparam REG_MAX7219_BRIGHTNESS = 24'h008;
   localparam io_pins = WIDTH + HEIGHT;
 
   /* MAX7219 interface */
@@ -168,7 +169,8 @@ module silife #(
     end else if (wb_read) begin
       case (wb_addr)
         REG_CTRL: o_wb_data <= {30'b0, 1'b0, enable};
-        REG_MAX7219: o_wb_data <= {27'b0, max7219_brightness, max7219_enable};
+        REG_MAX7219: o_wb_data <= {31'b0, max7219_enable};
+        REG_MAX7219_BRIGHTNESS: o_wb_data <= {28'b0, max7219_brightness};
         default: begin
           o_wb_data <= wb_matrix_data;
         end
@@ -195,7 +197,9 @@ module silife #(
           end
           REG_MAX7219: begin
             max7219_enable <= i_wb_data[0];
-            max7219_brightness = i_wb_data[4:1];
+          end
+          REG_MAX7219_BRIGHTNESS: begin
+            max7219_brightness <= i_wb_data[3:0];
           end
         endcase
         wb_write_ack <= 1;
