@@ -17,23 +17,27 @@ module silife_max7219 #(
     input wire [3:0] i_brightness,
     input wire i_reverse_columns,
     input wire i_serpentine,
+    input wire i_frame,
 
     // MAX7219 SPI interface
     output reg  o_cs,
-    output wire o_sck,  // 100ns
+    output wire o_sck,   // 100ns
     output wire o_mosi,
+    output wire o_busy,
 
     output reg [row_bits-1:0] o_row_select
 );
 
-  localparam StateInit = 2'd0;
-  localparam StateStart = 2'd1;
-  localparam StateData = 2'd2;
-  localparam StateEnable = 2'd3;
+  localparam StateInit = 3'd0;
+  localparam StateStart = 3'd1;
+  localparam StateData = 3'd2;
+  localparam StateEnable = 3'd3;
+  localparam StatePause = 3'd4;
 
   localparam row_bits = $clog2(HEIGHT);
 
-  reg [1:0] state;
+  reg [2:0] state;
+  assign o_busy = (state == StateStart || state == StateData || state == StateEnable) | spi_busy;
 
   reg [15:0] spi_word;
   reg spi_start;
@@ -156,6 +160,9 @@ module silife_max7219 #(
                 column_index <= column_index;
                 o_row_select <= o_row_select;
                 spi_start <= 0;
+                if (max7219_row == 8) begin
+                  if (!i_frame) state <= StatePause;
+                end
               end else begin
                 o_cs <= 0;
                 o_row_select[2:0] <= o_row_select[2:0] + 1;
@@ -182,6 +189,10 @@ module silife_max7219 #(
                 spi_start <= 1;
               end
             end
+          end
+          default: begin
+            /* We are paused */
+            if (i_frame) state <= StateData;
           end
         endcase
       end

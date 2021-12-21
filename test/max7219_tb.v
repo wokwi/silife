@@ -17,6 +17,7 @@ module test_silife_max7219 ();
   wire spi_sck;
   wire spi_cs;
   wire spi_mosi;
+  wire busy;
 
   silife_max7219 max7219 (
       .reset(reset),
@@ -27,10 +28,12 @@ module test_silife_max7219 ();
       .i_brightness(4'hf),
       .i_reverse_columns(1'b1),
       .i_serpentine(1'b1),
+      .i_frame(1'b1),
 
       .o_cs(spi_cs),
       .o_sck(spi_sck),
       .o_mosi(spi_mosi),
+      .o_busy(busy),
       .o_row_select(row_select)
   );
 

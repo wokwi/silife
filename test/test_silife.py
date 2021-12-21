@@ -17,12 +17,17 @@ reg_ctrl = 0x3000_0000
 REG_CTRL_EN = bit(0)
 REG_CTRL_PULSE = bit(1)
 
-reg_max7219 = 0x3000_0004
+reg_max7219_ctrl = 0x3000_0010
 REG_MAX7219_EN = bit(0)
-REG_MAX7219_REVERSE_COLS = bit(1)
-REG_MAX7219_SERPENTINE = bit(2)
+REG_MAX7219_PAUSE = bit(1)
+REG_MAX7219_FRAME = bit(2)
+REG_MAX7219_BUSY = bit(3)
 
-reg_max7219_brightness = 0x3000_0008
+reg_max7219_config = 0x3000_0014
+REG_MAX7219_REVERSE_COLS = bit(0)
+REG_MAX7219_SERPENTINE = bit(1)
+
+reg_max7219_brightness = 0x3000_0018
 
 wb_matrix_start = 0x3000_1000
 
@@ -117,7 +122,8 @@ async def test_life(dut):
 
     # Enable MAX7219 output (setting brightness to 12 out of 15)
     await silife.wb_write(reg_max7219_brightness, 12)
-    await silife.wb_write(reg_max7219, REG_MAX7219_EN | max7219_cfg)
+    await silife.wb_write(reg_max7219_config, max7219_cfg)
+    await silife.wb_write(reg_max7219_ctrl, REG_MAX7219_EN)
 
     # Write a matrix with some initial state
     await silife.wb_write(wb_matrix_start, 0x55)
