@@ -29,7 +29,6 @@ module silife #(
 
   reg enable;
   reg clk_pulse;
-  reg [15:0] scan_cycles;
 
   localparam REG_CTRL = 24'h000;
   localparam REG_MAX7219_CTRL = 24'h010;
@@ -196,7 +195,6 @@ module silife #(
     if (reset) begin
       enable <= 0;
       clk_pulse <= 0;
-      scan_cycles <= 16'd3;
       max7219_enable <= 1'b0;
       max7219_pause <= 1'b0;
       max7219_frame <= 1'b1;
