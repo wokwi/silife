@@ -16,6 +16,7 @@ module silife_max7219 #(
     input wire [WIDTH-1:0] i_cells,
     input wire [3:0] i_brightness,
     input wire i_reverse_columns,
+    input wire i_serpentine,
 
     // MAX7219 SPI interface
     output reg  o_cs,
@@ -42,8 +43,12 @@ module silife_max7219 #(
   reg [1:0] column_index;
   wire [4:0] column_offset = {column_index, 3'b000};
   reg [3:0] segment_index;
+
+  wire even_segment_row = !segment_index[2];
+  wire rotate180 = i_serpentine & even_segment_row;
+
   reg max7219_enabled;
-  wire [3:0] max7219_row = o_row_select[2:0] + 1;
+  wire [3:0] max7219_row = rotate180 ? (8 - o_row_select[2:0]) : o_row_select[2:0] + 1;
 
   function [7:0] reverse8(input [7:0] value);
     integer i;
@@ -52,8 +57,16 @@ module silife_max7219 #(
     end
   endfunction
 
-  wire [7:0] row_data = i_cells[column_offset+:8];
-  wire [7:0] row_data_rev = reverse8(row_data);
+  function [31:0] reverse32(input [31:0] value);
+    integer i;
+    for (i = 0; i < 32; i = i + 1) begin
+      reverse32[31-i] = value[i];
+    end
+  endfunction
+
+  wire [31:0] cells = rotate180 ? reverse32(i_cells) : i_cells;
+  wire [ 7:0] row_data = cells[column_offset+:8];
+  wire [ 7:0] row_data_rev = reverse8(row_data);
 
   silife_spi_master spim (
       .reset(reset),

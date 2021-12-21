@@ -40,6 +40,7 @@ module silife #(
   reg max7219_enable;
   reg [3:0] max7219_brightness;
   reg max7219_reverse_columns;
+  reg max7219_serpentine;
 
   /* Wishbone interface */
   reg wb_read_ack;
@@ -115,6 +116,7 @@ module silife #(
       .i_enable(max7219_enable),
       .i_brightness(max7219_brightness),
       .i_reverse_columns(max7219_reverse_columns),
+      .i_serpentine(max7219_serpentine),
       .i_cells(cells_scan),
       .o_cs(spi_cs),
       .o_sck(spi_sck),
@@ -171,7 +173,9 @@ module silife #(
     end else if (wb_read) begin
       case (wb_addr)
         REG_CTRL: o_wb_data <= {30'b0, 1'b0, enable};
-        REG_MAX7219: o_wb_data <= {30'b0, max7219_reverse_columns, max7219_enable};
+        REG_MAX7219: begin
+          o_wb_data <= {29'b0, max7219_serpentine, max7219_reverse_columns, max7219_enable};
+        end
         REG_MAX7219_BRIGHTNESS: o_wb_data <= {28'b0, max7219_brightness};
         default: begin
           o_wb_data <= wb_matrix_data;
@@ -190,6 +194,7 @@ module silife #(
       scan_cycles <= 16'd3;
       max7219_enable <= 1'b0;
       max7219_reverse_columns <= 1'b1;
+      max7219_serpentine <= 1'b1;
       max7219_brightness <= 4'hf;
     end else begin
       if (wb_write) begin
@@ -201,6 +206,7 @@ module silife #(
           REG_MAX7219: begin
             max7219_enable <= i_wb_data[0];
             max7219_reverse_columns <= i_wb_data[1];
+            max7219_serpentine <= i_wb_data[2];
           end
           REG_MAX7219_BRIGHTNESS: begin
             max7219_brightness <= i_wb_data[3:0];

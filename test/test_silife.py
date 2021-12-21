@@ -20,6 +20,7 @@ REG_CTRL_PULSE = bit(1)
 reg_max7219 = 0x3000_0004
 REG_MAX7219_EN = bit(0)
 REG_MAX7219_REVERSE_COLS = bit(1)
+REG_MAX7219_SERPENTINE = bit(2)
 
 reg_max7219_brightness = 0x3000_0008
 
@@ -106,6 +107,7 @@ async def create_silife(dut):
 
 @cocotb.test()
 async def test_life(dut):
+    max7219_cfg = REG_MAX7219_REVERSE_COLS | REG_MAX7219_SERPENTINE
     silife = await create_silife(dut)
     clock_sig = await make_clock(dut, 10)
     await reset(dut)
@@ -115,7 +117,7 @@ async def test_life(dut):
 
     # Enable MAX7219 output (setting brightness to 12 out of 15)
     await silife.wb_write(reg_max7219_brightness, 12)
-    await silife.wb_write(reg_max7219, REG_MAX7219_EN | REG_MAX7219_REVERSE_COLS)
+    await silife.wb_write(reg_max7219, REG_MAX7219_EN | max7219_cfg)
 
     # Write a matrix with some initial state
     await silife.wb_write(wb_matrix_start, 0x55)

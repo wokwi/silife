@@ -26,6 +26,7 @@ module test_silife_max7219 ();
       .i_enable(enable),
       .i_brightness(4'hf),
       .i_reverse_columns(1'b1),
+      .i_serpentine(1'b1),
 
       .o_cs(spi_cs),
       .o_sck(spi_sck),
