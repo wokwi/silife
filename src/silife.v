@@ -32,10 +32,12 @@ module silife #(
   reg [15:0] scan_cycles;
 
   localparam REG_CTRL = 24'h000;
+  localparam REG_MAX7219 = 24'h004;
   localparam io_pins = WIDTH + HEIGHT;
 
   /* MAX7219 interface */
   reg max7219_enable;
+  reg [3:0] max7219_brightness;
 
   /* Wishbone interface */
   reg wb_read_ack;
@@ -109,6 +111,7 @@ module silife #(
       .reset(reset),
       .clk(clk),
       .i_enable(max7219_enable),
+      .i_brightness(max7219_brightness),
       .i_cells(cells_scan),
       .o_cs(spi_cs),
       .o_sck(spi_sck),
@@ -160,11 +163,12 @@ module silife #(
   // Wishbone reads
   always @(posedge clk) begin
     if (reset) begin
-      o_wb_data <= 0;
+      o_wb_data   <= 0;
       wb_read_ack <= 0;
     end else if (wb_read) begin
       case (wb_addr)
-        REG_CTRL: o_wb_data <= {29'b0, max7219_enable, 1'b0, enable};
+        REG_CTRL: o_wb_data <= {30'b0, 1'b0, enable};
+        REG_MAX7219: o_wb_data <= {27'b0, max7219_brightness, max7219_enable};
         default: begin
           o_wb_data <= wb_matrix_data;
         end
@@ -181,13 +185,17 @@ module silife #(
       clk_pulse <= 0;
       scan_cycles <= 16'd3;
       max7219_enable <= 0;
+      max7219_brightness <= 4'hf;
     end else begin
       if (wb_write) begin
         case (wb_addr)
           REG_CTRL: begin
             enable <= i_wb_data[0];
             clk_pulse <= i_wb_data[1];
-            max7219_enable <= i_wb_data[2];
+          end
+          REG_MAX7219: begin
+            max7219_enable <= i_wb_data[0];
+            max7219_brightness = i_wb_data[4:1];
           end
         endcase
         wb_write_ack <= 1;

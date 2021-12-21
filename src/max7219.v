@@ -14,6 +14,7 @@ module silife_max7219 #(
 
     input wire i_enable,
     input wire [WIDTH-1:0] i_cells,
+    input wire [3:0] i_brightness,
 
     // MAX7219 SPI interface
     output reg  o_cs,
@@ -60,6 +61,8 @@ module silife_max7219 #(
         case (init_index)
           0: spi_word <= {8'h0f, 8'h00};  // Disable test mode
           1: spi_word <= {8'h0b, 8'h07};  // Set scanlines to 8
+          2: spi_word <= {8'h09, 8'h00};  // Disable decode mode
+          3: spi_word <= {8'h0a, 4'b0000, i_brightness};  // Configure max brightness
         endcase
       end
       StateData:   spi_word = {4'b0, max7219_row, i_cells[column_offset+:8]};
@@ -108,7 +111,7 @@ module silife_max7219 #(
               end else begin
                 o_cs <= 0;
                 segment_index <= 4'h0;
-                if (init_index == 1) begin
+                if (init_index == 3) begin
                   state <= StateData;
                 end
                 init_index <= init_index + 1;

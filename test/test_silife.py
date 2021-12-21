@@ -15,7 +15,12 @@ matrix_width = 8
 reg_ctrl = 0x3000_0000
 REG_CTRL_EN = bit(0)
 REG_CTRL_PULSE = bit(1)
-REG_CTRL_MAX7219_EN = bit(2)
+
+reg_max7219 = 0x3000_0004
+REG_MAX7219_EN = bit(0)
+REG_MAX7219_BRIGHTNESS_SHIFT = 1
+REG_MAX7219_BRIGHTNESS_MASK = 0xf
+
 wb_matrix_start = 0x3000_1000
 
 wishbone_signals = {
@@ -107,7 +112,7 @@ async def test_life(dut):
     await silife.wb_write(reg_ctrl, 0)
 
     # Enable MAX7219 output
-    await silife.wb_write(reg_ctrl, REG_CTRL_MAX7219_EN)
+    await silife.wb_write(reg_max7219, REG_MAX7219_EN | (0xa << REG_MAX7219_BRIGHTNESS_SHIFT))
 
     # Write a matrix with some initial state
     await silife.wb_write(wb_matrix_start, 0x55)
@@ -130,7 +135,7 @@ async def test_life(dut):
     ])
 
     # Run one step, observe the result
-    await silife.wb_write(reg_ctrl, REG_CTRL_PULSE | REG_CTRL_MAX7219_EN)
+    await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
     assert await silife.read_matrix() == [
         "  *     ",
         "  *     ",
@@ -143,7 +148,7 @@ async def test_life(dut):
     ]
 
     # One more step - we should be back to the initial state
-    await silife.wb_write(reg_ctrl, REG_CTRL_PULSE | REG_CTRL_MAX7219_EN)
+    await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
     assert await silife.read_matrix() == [
         "        ",
         " ***    ",

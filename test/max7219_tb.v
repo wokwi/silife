@@ -22,8 +22,9 @@ module test_silife_max7219 ();
       .reset(reset),
       .clk  (clk),
 
-      .i_cells (cells),
+      .i_cells(cells),
       .i_enable(enable),
+      .i_brightness(4'hf),
 
       .o_cs(spi_cs),
       .o_sck(spi_sck),
@@ -44,11 +45,13 @@ module test_silife_max7219 ();
     matrix_cells <= 0;
     #10 reset <= 0;
     #20 enable <= 1;
-    matrix_cells[0]   = 8'h20;
-    matrix_cells[4]   = 32'h54443424;
-    matrix_cells[6]   = 8'h66;
-    matrix_cells[7]   = 8'haa;
+    matrix_cells[0] = 8'h20;
+    matrix_cells[4] = 32'h54443424;
+    matrix_cells[6] = 8'h66;
+    matrix_cells[7] = 8'haa;
     matrix_cells[8+4] = 32'h55453525;
+    matrix_cells[16+4] = 32'h11223344;
+    matrix_cells[24+4] = 32'h44aa11ff;
     #180000 $finish();
   end
 
