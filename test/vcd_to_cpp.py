@@ -30,7 +30,7 @@ for line in open("max7219_tb.vcd"):
             filter_var_ids[var_id] = var_name
     if line.startswith("#"):
         current_time = int(line[1:]) // 1000  # convert to ns
-    elif not line.startswith("$") and line[1] in filter_var_ids:
+    elif line[0] in "01xz" and line[1] in filter_var_ids:
         if current_time != last_time:
             print("  {}, /* ts: {} */".format(current_time - last_time, current_time))
             last_time = current_time
