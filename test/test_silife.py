@@ -1,3 +1,4 @@
+import os
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles
@@ -40,6 +41,8 @@ wishbone_signals = {
     "datrd": "o_wb_data",
     "ack": "o_wb_ack",
 }
+
+test_max7219 = os.environ.get("TEST_MAX7219") != None
 
 
 async def reset(dut):
@@ -96,6 +99,13 @@ class SiLifeController:
             result.append(row)
         return result
 
+    async def max7219_frame(self):
+        await self.wb_write(
+            reg_max7219_ctrl, REG_MAX7219_EN | REG_MAX7219_PAUSE | REG_MAX7219_FRAME
+        )
+        while await self.wb_read(reg_max7219_ctrl) & REG_MAX7219_BUSY:
+            pass
+
 
 async def create_silife(dut):
     if hasattr(dut, "VPWR"):
@@ -120,11 +130,6 @@ async def test_life(dut):
     # Disable the Game of Life
     await silife.wb_write(reg_ctrl, 0)
 
-    # Enable MAX7219 output (setting brightness to 12 out of 15)
-    await silife.wb_write(reg_max7219_brightness, 12)
-    await silife.wb_write(reg_max7219_config, max7219_cfg)
-    await silife.wb_write(reg_max7219_ctrl, REG_MAX7219_EN)
-
     # Write a matrix with some initial state
     await silife.wb_write(wb_matrix_start, 0x55)
     await silife.wb_write(wb_matrix_start + 4, 0x78)
@@ -132,6 +137,11 @@ async def test_life(dut):
     # Assert that we read the same state back
     assert await silife.wb_read(wb_matrix_start) == 0x55
     assert await silife.wb_read(wb_matrix_start + 4) == 0x78
+
+    # Enable MAX7219 output (setting brightness to 12 out of 15)
+    await silife.wb_write(reg_max7219_brightness, 12)
+    await silife.wb_write(reg_max7219_config, max7219_cfg)
+    await silife.wb_write(reg_max7219_ctrl, REG_MAX7219_EN)
 
     # Now load a block with two blinkers
     await silife.write_matrix(
@@ -147,6 +157,9 @@ async def test_life(dut):
         ]
     )
 
+    if test_max7219:
+        await silife.max7219_frame()
+
     # Run one step, observe the result
     await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
     assert await silife.read_matrix() == [
@@ -160,6 +173,9 @@ async def test_life(dut):
         "**      ",
     ]
 
+    if test_max7219:
+        await silife.max7219_frame()
+
     # One more step - we should be back to the initial state
     await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
     assert await silife.read_matrix() == [
@@ -172,5 +188,11 @@ async def test_life(dut):
         "**      ",
         "**      ",
     ]
+
+    if test_max7219:
+        await silife.max7219_frame()
+
+        await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
+        await silife.max7219_frame()
 
     clock_sig.kill()
