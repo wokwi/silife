@@ -1,10 +1,12 @@
+import os
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles
 from cocotbext.wishbone.driver import WishboneMaster, WBOp
 
 
-def bit(b): return 1 << b
+def bit(b):
+    return 1 << b
 
 
 # Matrix configuration
@@ -15,18 +17,32 @@ matrix_width = 8
 reg_ctrl = 0x3000_0000
 REG_CTRL_EN = bit(0)
 REG_CTRL_PULSE = bit(1)
-REG_CTRL_MAX7219_EN = bit(2)
+
+reg_max7219_ctrl = 0x3000_0010
+REG_MAX7219_EN = bit(0)
+REG_MAX7219_PAUSE = bit(1)
+REG_MAX7219_FRAME = bit(2)
+REG_MAX7219_BUSY = bit(3)
+
+reg_max7219_config = 0x3000_0014
+REG_MAX7219_REVERSE_COLS = bit(0)
+REG_MAX7219_SERPENTINE = bit(1)
+
+reg_max7219_brightness = 0x3000_0018
+
 wb_matrix_start = 0x3000_1000
 
 wishbone_signals = {
-    "cyc":  "i_wb_cyc",
-    "stb":  "i_wb_stb",
-    "we":   "i_wb_we",
-    "adr":  "i_wb_addr",
+    "cyc": "i_wb_cyc",
+    "stb": "i_wb_stb",
+    "we": "i_wb_we",
+    "adr": "i_wb_addr",
     "datwr": "i_wb_data",
     "datrd": "o_wb_data",
-    "ack":  "o_wb_ack"
+    "ack": "o_wb_ack",
 }
+
+test_max7219 = os.environ.get("TEST_MAX7219") != None
 
 
 async def reset(dut):
@@ -38,8 +54,7 @@ async def reset(dut):
 
 async def make_clock(dut, clock_mhz):
     clk_period_ns = round(1 / clock_mhz * 1000, 2)
-    dut._log.info("input clock = %d MHz, period = %.2f ns" %
-                  (clock_mhz, clk_period_ns))
+    dut._log.info("input clock = %d MHz, period = %.2f ns" % (clock_mhz, clk_period_ns))
     clock = Clock(dut.clk, clk_period_ns, units="ns")
     clock_sig = cocotb.fork(clock.start())
     return clock_sig
@@ -63,7 +78,7 @@ class SiLifeController:
         word_offset = 0
         for row in matrix:
             for col in row:
-                if col != ' ':
+                if col != " ":
                     value |= bit(bit_index)
                 bit_index += 1
             await self.wb_write(wb_matrix_start + word_offset, value)
@@ -84,30 +99,36 @@ class SiLifeController:
             result.append(row)
         return result
 
+    async def max7219_frame(self):
+        await self.wb_write(
+            reg_max7219_ctrl, REG_MAX7219_EN | REG_MAX7219_PAUSE | REG_MAX7219_FRAME
+        )
+        while await self.wb_read(reg_max7219_ctrl) & REG_MAX7219_BUSY:
+            pass
+
 
 async def create_silife(dut):
-    if hasattr(dut, 'VPWR'):
+    if hasattr(dut, "VPWR"):
         # Running a gate-level simulation, connect the power and ground signals
         dut.VGND <= 0
         dut.VPWR <= 1
 
     wishbone = WishboneMaster(
-        dut, "", dut.clk, width=32, timeout=10, signals_dict=wishbone_signals)
+        dut, "", dut.clk, width=32, timeout=10, signals_dict=wishbone_signals
+    )
     silife = SiLifeController(dut, wishbone)
     return silife
 
 
 @cocotb.test()
 async def test_life(dut):
+    max7219_cfg = REG_MAX7219_REVERSE_COLS | REG_MAX7219_SERPENTINE
     silife = await create_silife(dut)
     clock_sig = await make_clock(dut, 10)
     await reset(dut)
 
     # Disable the Game of Life
     await silife.wb_write(reg_ctrl, 0)
-
-    # Enable MAX7219 output
-    await silife.wb_write(reg_ctrl, REG_CTRL_MAX7219_EN)
 
     # Write a matrix with some initial state
     await silife.wb_write(wb_matrix_start, 0x55)
@@ -117,20 +138,30 @@ async def test_life(dut):
     assert await silife.wb_read(wb_matrix_start) == 0x55
     assert await silife.wb_read(wb_matrix_start + 4) == 0x78
 
+    # Enable MAX7219 output (setting brightness to 12 out of 15)
+    await silife.wb_write(reg_max7219_brightness, 12)
+    await silife.wb_write(reg_max7219_config, max7219_cfg)
+    await silife.wb_write(reg_max7219_ctrl, REG_MAX7219_EN)
+
     # Now load a block with two blinkers
-    await silife.write_matrix([
-        "        ",
-        " ***    ",
-        "        ",
-        "     *  ",
-        "     *  ",
-        "     *  ",
-        "**      ",
-        "**      ",
-    ])
+    await silife.write_matrix(
+        [
+            "        ",
+            " ***    ",
+            "        ",
+            "     *  ",
+            "     *  ",
+            "     *  ",
+            "**      ",
+            "**      ",
+        ]
+    )
+
+    if test_max7219:
+        await silife.max7219_frame()
 
     # Run one step, observe the result
-    await silife.wb_write(reg_ctrl, REG_CTRL_PULSE | REG_CTRL_MAX7219_EN)
+    await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
     assert await silife.read_matrix() == [
         "  *     ",
         "  *     ",
@@ -142,8 +173,11 @@ async def test_life(dut):
         "**      ",
     ]
 
+    if test_max7219:
+        await silife.max7219_frame()
+
     # One more step - we should be back to the initial state
-    await silife.wb_write(reg_ctrl, REG_CTRL_PULSE | REG_CTRL_MAX7219_EN)
+    await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
     assert await silife.read_matrix() == [
         "        ",
         " ***    ",
@@ -154,5 +188,11 @@ async def test_life(dut):
         "**      ",
         "**      ",
     ]
+
+    if test_max7219:
+        await silife.max7219_frame()
+
+        await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
+        await silife.max7219_frame()
 
     clock_sig.kill()

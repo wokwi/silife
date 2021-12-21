@@ -32,10 +32,19 @@ module silife #(
   reg [15:0] scan_cycles;
 
   localparam REG_CTRL = 24'h000;
+  localparam REG_MAX7219_CTRL = 24'h010;
+  localparam REG_MAX7219_CONFIG = 24'h014;
+  localparam REG_MAX7219_BRIGHTNESS = 24'h018;
   localparam io_pins = WIDTH + HEIGHT;
 
   /* MAX7219 interface */
   reg max7219_enable;
+  reg max7219_pause;
+  reg max7219_frame;
+  wire max7219_busy;
+  reg [3:0] max7219_brightness;
+  reg max7219_reverse_columns;
+  reg max7219_serpentine;
 
   /* Wishbone interface */
   reg wb_read_ack;
@@ -108,11 +117,16 @@ module silife #(
   ) max7219 (
       .reset(reset),
       .clk(clk),
+      .i_frame(!max7219_pause | max7219_frame),
       .i_enable(max7219_enable),
+      .i_brightness(max7219_brightness),
+      .i_reverse_columns(max7219_reverse_columns),
+      .i_serpentine(max7219_serpentine),
       .i_cells(cells_scan),
       .o_cs(spi_cs),
       .o_sck(spi_sck),
       .o_mosi(spi_mosi),
+      .o_busy(max7219_busy),
       .o_row_select(row_select_scan)
   );
 
@@ -160,11 +174,14 @@ module silife #(
   // Wishbone reads
   always @(posedge clk) begin
     if (reset) begin
-      o_wb_data <= 0;
+      o_wb_data   <= 0;
       wb_read_ack <= 0;
     end else if (wb_read) begin
       case (wb_addr)
-        REG_CTRL: o_wb_data <= {29'b0, max7219_enable, 1'b0, enable};
+        REG_CTRL: o_wb_data <= {30'b0, 1'b0, enable};
+        REG_MAX7219_CTRL: o_wb_data <= {28'b0, max7219_busy, 1'b0, max7219_pause, max7219_enable};
+        REG_MAX7219_CONFIG: o_wb_data <= {30'b0, max7219_serpentine, max7219_reverse_columns};
+        REG_MAX7219_BRIGHTNESS: o_wb_data <= {28'b0, max7219_brightness};
         default: begin
           o_wb_data <= wb_matrix_data;
         end
@@ -180,19 +197,36 @@ module silife #(
       enable <= 0;
       clk_pulse <= 0;
       scan_cycles <= 16'd3;
-      max7219_enable <= 0;
+      max7219_enable <= 1'b0;
+      max7219_pause <= 1'b0;
+      max7219_frame <= 1'b1;
+      max7219_reverse_columns <= 1'b1;
+      max7219_serpentine <= 1'b1;
+      max7219_brightness <= 4'hf;
     end else begin
       if (wb_write) begin
         case (wb_addr)
           REG_CTRL: begin
             enable <= i_wb_data[0];
             clk_pulse <= i_wb_data[1];
-            max7219_enable <= i_wb_data[2];
+          end
+          REG_MAX7219_CTRL: begin
+            max7219_enable <= i_wb_data[0];
+            max7219_pause  <= i_wb_data[1];
+            max7219_frame  <= i_wb_data[2];
+          end
+          REG_MAX7219_CONFIG: begin
+            max7219_reverse_columns <= i_wb_data[0];
+            max7219_serpentine <= i_wb_data[1];
+          end
+          REG_MAX7219_BRIGHTNESS: begin
+            max7219_brightness <= i_wb_data[3:0];
           end
         endcase
         wb_write_ack <= 1;
       end else begin
         wb_write_ack <= 0;
+        if (max7219_busy) max7219_frame <= 0;
       end
       if (clk_pulse) clk_pulse <= 0;
     end

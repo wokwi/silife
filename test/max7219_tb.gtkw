@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Mon Dec 20 14:34:21 2021
+[*] Tue Dec 21 19:28:42 2021
 [*]
 [dumpfile] "/mnt/c/p/silife/max7219_tb.vcd"
-[dumpfile_mtime] "Mon Dec 20 14:32:37 2021"
-[dumpfile_size] 621427
+[dumpfile_mtime] "Tue Dec 21 19:28:09 2021"
+[dumpfile_size] 637914
 [savefile] "/mnt/c/p/silife/test/max7219_tb.gtkw"
 [timestart] 0
 [size] 1908 999
 [pos] -1 -1
-*-24.547882 8400000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-23.547882 65732000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] test_silife_max7219.
 [treeopen] test_silife_max7219.max7219.
 [sst_width] 214
@@ -22,20 +22,25 @@ test_silife_max7219.clk
 test_silife_max7219.spi_cs
 test_silife_max7219.spi_mosi
 test_silife_max7219.spi_sck
+test_silife_max7219.busy
 @200
 -
 @28
 test_silife_max7219.max7219.i_enable
-test_silife_max7219.max7219.state[1:0]
+test_silife_max7219.max7219.i_frame
+test_silife_max7219.max7219.i_reverse_columns
+@29
+test_silife_max7219.max7219.i_serpentine
 @22
 test_silife_max7219.max7219.spi_word[15:0]
 test_silife_max7219.max7219.segment_index[3:0]
-@23
 test_silife_max7219.max7219.o_row_select[4:0]
 @28
 test_silife_max7219.max7219.column_index[1:0]
 @22
 test_silife_max7219.max7219.column_offset[4:0]
+@28
+test_silife_max7219.max7219.rotate180
 @200
 -
 @28

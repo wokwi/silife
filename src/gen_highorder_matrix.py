@@ -53,10 +53,10 @@ module silife_matrix_{width}x{height} (
   assign cells = selected_y ? {{cells_1_1, cells_1_0}} : {{cells_0_1, cells_0_0}};
   assign cells2 = row_select2[{row_select_bits}] ? {{cells2_1_1, cells2_1_0}} : {{cells2_0_1, cells2_0_0}};
 
-  assign o_n = {{n_0_0, n_0_1}};
-  assign o_e = {{e_0_1, e_0_1}};
-  assign o_s = {{s_1_0, s_1_1}};
-  assign o_w = {{w_0_0, w_1_0}};
+  assign o_n = {{{o_n}}};
+  assign o_e = {{{o_e}}};
+  assign o_s = {{{o_s}}};
+  assign o_w = {{{o_w}}};
 
   wire [{cell_values_bits}:0] cell_values = {{
     {cell_values}
@@ -196,6 +196,10 @@ height_bits = ceil(log2(height * sub_size))
 
 print(
     template.format(
+        o_n=", ".join(["n_0_{}".format(i) for i in reversed(range(width))]),
+        o_e=", ".join(["e_{}_1".format(i) for i in reversed(range(width))]),
+        o_s=", ".join(["s_1_{}".format(i) for i in reversed(range(width))]),
+        o_w=", ".join(["w_{}_0".format(i) for i in reversed(range(width))]),
         cells=cells[2:],
         cell_values_bits=(width * sub_size * height * sub_size) - 1,
         cell_values=",\n    ".join(cell_values),
