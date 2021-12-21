@@ -84,7 +84,7 @@ module silife_max7219 #(
 
   always @(*) begin
     case (state)
-      StateInit:   spi_word = 16'b0;
+      StateInit: spi_word = 16'b0;
       StateStart: begin
         case (init_index)
           0: spi_word = {8'h0f, 8'h00};  // Disable test mode
@@ -93,7 +93,7 @@ module silife_max7219 #(
           3: spi_word = {8'h0a, 4'b0000, i_brightness};  // Configure max brightness
         endcase
       end
-      StateData:   spi_word = {4'b0, max7219_row, i_reverse_columns ? row_data_rev : row_data};
+      StateData: spi_word = {4'b0, max7219_row, i_reverse_columns ? row_data_rev : row_data};
       StateEnable: spi_word = {8'h0c, 8'h01};  // Enable display
       default: spi_word = 16'b0;
     endcase
