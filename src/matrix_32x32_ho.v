@@ -38,10 +38,10 @@ module silife_matrix_32x32 (
   assign cells = selected_y ? {cells_1_1, cells_1_0} : {cells_0_1, cells_0_0};
   assign cells2 = row_select2[4] ? {cells2_1_1, cells2_1_0} : {cells2_0_1, cells2_0_0};
 
-  assign o_n = {n_0_0, n_0_1};
-  assign o_e = {e_0_1, e_0_1};
-  assign o_s = {s_1_0, s_1_1};
-  assign o_w = {w_0_0, w_1_0};
+  assign o_n = {n_0_1, n_0_0};
+  assign o_e = {e_1_1, e_0_1};
+  assign o_s = {s_1_1, s_1_0};
+  assign o_w = {w_1_0, w_0_0};
 
   wire [1023:0] cell_values = {
     submatrix_1_1.cell_values[255:240],
