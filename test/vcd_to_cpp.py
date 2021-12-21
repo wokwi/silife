@@ -1,4 +1,4 @@
-filter_vars = ["spi_cs", "spi_sck", "spi_mosi"]
+filter_vars = ["spi_cs", "spi_sck", "spi_mosi", "max7219_busy"]
 filter_var_ids = {}
 
 
@@ -13,7 +13,7 @@ def pin_names(pin_values):
 for index, var in enumerate(filter_vars):
     print("#define PIN_{} (0x{:02x})".format(var.upper(), 1 << index))
 print("")
-print("uint32_t vcd_pin_data [] = {")
+print("const uint32_t vcd_pin_data [] = {")
 
 
 definition_section = True
@@ -30,7 +30,10 @@ for line in open("max7219_tb.vcd"):
             filter_var_ids[var_id] = var_name
     if line.startswith("#"):
         current_time = int(line[1:]) // 1000  # convert to ns
-    elif line[0] in "01xz" and line[1] in filter_var_ids:
+    elif line[0] in "01xz":
+        var_id = line.split(" ")[0][1:]
+        if not (var_id in filter_var_ids):
+            continue
         if current_time != last_time:
             print("  {}, /* ts: {} */".format(current_time - last_time, current_time))
             last_time = current_time

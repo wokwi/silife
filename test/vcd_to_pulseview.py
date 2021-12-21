@@ -24,7 +24,9 @@ for line in open("max7219_tb.vcd"):
             print(line)
         elif line.startswith("#"):
             print("#{}".format(int(line[1:]) // 1000))  # convert to ns
-        elif line[1] in filter_var_ids:
-            print(line)
+        elif line[0] in "01xz":
+            var_id = line.split(" ")[0][1:]
+            if var_id in filter_var_ids:
+                print(line)
 
 print("$enddefinitions $end")
