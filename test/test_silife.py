@@ -4,7 +4,8 @@ from cocotb.triggers import ClockCycles
 from cocotbext.wishbone.driver import WishboneMaster, WBOp
 
 
-def bit(b): return 1 << b
+def bit(b):
+    return 1 << b
 
 
 # Matrix configuration
@@ -19,18 +20,18 @@ REG_CTRL_PULSE = bit(1)
 reg_max7219 = 0x3000_0004
 REG_MAX7219_EN = bit(0)
 REG_MAX7219_BRIGHTNESS_SHIFT = 1
-REG_MAX7219_BRIGHTNESS_MASK = 0xf
+REG_MAX7219_BRIGHTNESS_MASK = 0xF
 
 wb_matrix_start = 0x3000_1000
 
 wishbone_signals = {
-    "cyc":  "i_wb_cyc",
-    "stb":  "i_wb_stb",
-    "we":   "i_wb_we",
-    "adr":  "i_wb_addr",
+    "cyc": "i_wb_cyc",
+    "stb": "i_wb_stb",
+    "we": "i_wb_we",
+    "adr": "i_wb_addr",
     "datwr": "i_wb_data",
     "datrd": "o_wb_data",
-    "ack":  "o_wb_ack"
+    "ack": "o_wb_ack",
 }
 
 
@@ -43,8 +44,7 @@ async def reset(dut):
 
 async def make_clock(dut, clock_mhz):
     clk_period_ns = round(1 / clock_mhz * 1000, 2)
-    dut._log.info("input clock = %d MHz, period = %.2f ns" %
-                  (clock_mhz, clk_period_ns))
+    dut._log.info("input clock = %d MHz, period = %.2f ns" % (clock_mhz, clk_period_ns))
     clock = Clock(dut.clk, clk_period_ns, units="ns")
     clock_sig = cocotb.fork(clock.start())
     return clock_sig
@@ -68,7 +68,7 @@ class SiLifeController:
         word_offset = 0
         for row in matrix:
             for col in row:
-                if col != ' ':
+                if col != " ":
                     value |= bit(bit_index)
                 bit_index += 1
             await self.wb_write(wb_matrix_start + word_offset, value)
@@ -91,13 +91,14 @@ class SiLifeController:
 
 
 async def create_silife(dut):
-    if hasattr(dut, 'VPWR'):
+    if hasattr(dut, "VPWR"):
         # Running a gate-level simulation, connect the power and ground signals
         dut.VGND <= 0
         dut.VPWR <= 1
 
     wishbone = WishboneMaster(
-        dut, "", dut.clk, width=32, timeout=10, signals_dict=wishbone_signals)
+        dut, "", dut.clk, width=32, timeout=10, signals_dict=wishbone_signals
+    )
     silife = SiLifeController(dut, wishbone)
     return silife
 
@@ -112,7 +113,9 @@ async def test_life(dut):
     await silife.wb_write(reg_ctrl, 0)
 
     # Enable MAX7219 output
-    await silife.wb_write(reg_max7219, REG_MAX7219_EN | (0xa << REG_MAX7219_BRIGHTNESS_SHIFT))
+    await silife.wb_write(
+        reg_max7219, REG_MAX7219_EN | (0xA << REG_MAX7219_BRIGHTNESS_SHIFT)
+    )
 
     # Write a matrix with some initial state
     await silife.wb_write(wb_matrix_start, 0x55)
@@ -123,16 +126,18 @@ async def test_life(dut):
     assert await silife.wb_read(wb_matrix_start + 4) == 0x78
 
     # Now load a block with two blinkers
-    await silife.write_matrix([
-        "        ",
-        " ***    ",
-        "        ",
-        "     *  ",
-        "     *  ",
-        "     *  ",
-        "**      ",
-        "**      ",
-    ])
+    await silife.write_matrix(
+        [
+            "        ",
+            " ***    ",
+            "        ",
+            "     *  ",
+            "     *  ",
+            "     *  ",
+            "**      ",
+            "**      ",
+        ]
+    )
 
     # Run one step, observe the result
     await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
