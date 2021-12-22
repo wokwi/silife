@@ -3,15 +3,17 @@ import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles
 from cocotbext.wishbone.driver import WishboneMaster, WBOp
+from .game_of_life import GameOfLife
 
 
 def bit(b):
     return 1 << b
 
 
-# Matrix configuration
-matrix_height = 8
-matrix_width = 8
+# Grid configuration
+grid_height = 32
+grid_width = 32
+test_generations = 50
 
 # Wishbone bus registers
 reg_ctrl = 0x3000_0000
@@ -30,7 +32,7 @@ REG_MAX7219_SERPENTINE = bit(1)
 
 reg_max7219_brightness = 0x3000_0018
 
-wb_matrix_start = 0x3000_1000
+wb_grid_start = 0x3000_1000
 
 wishbone_signals = {
     "cyc": "i_wb_cyc",
@@ -72,26 +74,26 @@ class SiLifeController:
     async def wb_write(self, addr, value):
         await self._wishbone.send_cycle([WBOp(addr, value)])
 
-    async def write_matrix(self, matrix):
+    async def write_grid(self, grid):
         value = 0
         bit_index = 0
         word_offset = 0
-        for row in matrix:
+        for row in grid:
             for col in row:
                 if col != " ":
                     value |= bit(bit_index)
                 bit_index += 1
-            await self.wb_write(wb_matrix_start + word_offset, value)
+            await self.wb_write(wb_grid_start + word_offset, value)
             word_offset += 4
             bit_index = 0
             value = 0
 
-    async def read_matrix(self):
+    async def read_grid(self, limit=(grid_height, grid_width)):
         result = []
-        for row_index in range(matrix_height):
-            value = await self.wb_read(wb_matrix_start + row_index * 4)
+        for row_index in range(limit[0]):
+            value = await self.wb_read(wb_grid_start + row_index * 4)
             row = ""
-            for bit_index in range(matrix_height):
+            for bit_index in range(limit[1]):
                 if value & bit(bit_index):
                     row += "*"
                 else:
@@ -130,21 +132,21 @@ async def test_life(dut):
     # Disable the Game of Life
     await silife.wb_write(reg_ctrl, 0)
 
-    # Write a matrix with some initial state
-    await silife.wb_write(wb_matrix_start, 0x55)
-    await silife.wb_write(wb_matrix_start + 4, 0x78)
+    # Write a grid with some initial state
+    await silife.wb_write(wb_grid_start, 0x55)
+    await silife.wb_write(wb_grid_start + 4, 0x78)
 
     # Assert that we read the same state back
-    assert await silife.wb_read(wb_matrix_start) == 0x55
-    assert await silife.wb_read(wb_matrix_start + 4) == 0x78
+    assert await silife.wb_read(wb_grid_start) == 0x55
+    assert await silife.wb_read(wb_grid_start + 4) == 0x78
 
     # Enable MAX7219 output (setting brightness to 12 out of 15)
     await silife.wb_write(reg_max7219_brightness, 12)
     await silife.wb_write(reg_max7219_config, max7219_cfg)
     await silife.wb_write(reg_max7219_ctrl, REG_MAX7219_EN)
 
-    # Now load a block with two blinkers
-    await silife.write_matrix(
+    # Load initial grid state
+    await silife.write_grid(
         [
             "        ",
             " ***    ",
@@ -162,7 +164,7 @@ async def test_life(dut):
 
     # Run one step, observe the result
     await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
-    assert await silife.read_matrix() == [
+    assert await silife.read_grid((8, 8)) == [
         "  *     ",
         "  *     ",
         "  *     ",
@@ -178,7 +180,7 @@ async def test_life(dut):
 
     # One more step - we should be back to the initial state
     await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
-    assert await silife.read_matrix() == [
+    assert await silife.read_grid((8, 8)) == [
         "        ",
         " ***    ",
         "        ",
@@ -194,5 +196,25 @@ async def test_life(dut):
 
         await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
         await silife.max7219_frame()
+
+    # Run many generations of simulation and compare output
+    life = GameOfLife(grid_height, grid_width)
+    life.load(
+        [
+            "*** *",
+            "*    ",
+            "   **",
+            " ** *",
+            "* * *",
+        ],
+        pos=(22, 12),
+    )
+    await silife.write_grid(life.dump())
+
+    for i in range(test_generations):
+        print("Testing generation {} of {}...".format(i + 1, test_generations))
+        life.step()
+        await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
+        assert await silife.read_grid() == life.dump()
 
     clock_sig.kill()

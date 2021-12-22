@@ -5,7 +5,7 @@
 //
 `default_nettype none
 
-module test_silife_matrix ();
+module test_silife_grid ();
   reg reset;
   reg clk;
   reg [2:0] row_select;
@@ -37,7 +37,7 @@ module test_silife_matrix ();
   wire [63:0] row6 = row_to_string(clk, exec.cell_values[48+:8]);
   wire [63:0] row7 = row_to_string(clk, exec.cell_values[56+:8]);
 
-  silife_matrix_8x8 exec (
+  silife_grid_8x8 exec (
       .reset(reset),
       .clk(clk),
       .enable(1'b1),
@@ -73,7 +73,7 @@ module test_silife_matrix ();
   end
 
   initial begin
-    $dumpfile("matrix_tb.vcd");
-    $dumpvars(0, test_silife_matrix);
+    $dumpfile("grid_tb.vcd");
+    $dumpvars(0, test_silife_grid);
   end
 endmodule

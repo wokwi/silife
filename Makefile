@@ -3,13 +3,13 @@
 
 export COCOTB_REDUCED_LOG_FMT=1
 
-GENERATED_SOURCES= src/matrix_32x32.v
+GENERATED_SOURCES= src/grid_32x32.v
 
 all: generate test_silife
 
 generate: $(GENERATED_SOURCES)
 
-src/matrix_32x32.v: src/gen_matrix.py
+src/grid_32x32.v: src/gen_grid.py
 	python $< > $@
 	verible-verilog-format --inplace $@
 
@@ -18,10 +18,10 @@ test_cell:
 	./cell_tb.out
 	gtkwave cell_tb.vcd test/cell_tb.gtkw
 
-test_matrix: src/matrix_32x32.v
-	iverilog -g2005 -I src -o matrix_tb.out test/matrix_tb.v src/matrix_32x32.v src/cell.v
-	./matrix_tb.out
-	gtkwave matrix_tb.vcd test/matrix_tb.gtkw
+test_grid: src/grid_32x32.v
+	iverilog -g2005 -I src -o grid_tb.out test/grid_tb.v src/grid_32x32.v src/cell.v
+	./grid_tb.out
+	gtkwave grid_tb.vcd test/grid_tb.gtkw
 
 test_scan:
 	iverilog -g2005 -I src -o scan_tb.out test/scan_tb.v src/scan.v
@@ -36,7 +36,7 @@ test_max7219:
 	gtkwave max7219_tb.vcd test/max7219_tb.gtkw
 
 test_silife:
-	iverilog -I src -s silife -s dump -o silife_test.out test/dump_silife.v src/silife.v src/cell.v src/matrix_32x32.v src/matrix_wishbone.v src/max7219.v src/spi_master.v
+	iverilog -I src -s silife -s dump -o silife_test.out test/dump_silife.v src/silife.v src/cell.v src/grid_32x32.v src/grid_wishbone.v src/max7219.v src/spi_master.v
 	MODULE=test.test_silife vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus ./silife_test.out
 	gtkwave silife_test.vcd test/silife_test.gtkw
 
