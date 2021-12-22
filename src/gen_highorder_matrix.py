@@ -110,22 +110,24 @@ def wireslice(offset):
 def cell(y, x, dy, dx):
     max_x = width - 1
     max_y = height - 1
+    corner_x = x * sub_size - 1 if dx < 0 else (x + 1) * sub_size
+    corner_y = y * sub_size - 1 if dy < 0 else (y + 1) * sub_size
     if y == 0 and dy < 0:
         if x == 0 and dx < 0:
             return "i_nw"
         if x == max_x and dx > 0:
             return "i_ne"
-        return "i_n[{}]".format(x * sub_size + dx)
+        return "i_n[{}]".format(corner_x)
     if y == max_y and dy > 0:
         if x == 0 and dx < 0:
             return "i_sw"
         if x == max_x and dx > 0:
             return "i_se"
-        return "i_s[{}]".format(x * sub_size + dx)
+        return "i_s[{}]".format(corner_x)
     if x == 0 and dx < 0:
-        return "i_w[{}]".format(y * sub_size + dy)
+        return "i_w[{}]".format(corner_y)
     if x == max_x and dx > 0:
-        return "i_e[{}]".format(y * sub_size + dy)
+        return "i_e[{}]".format(corner_y)
     if dy < 0:
         return "s_{}_{}[{}]".format(y + dy, x + dx, sub_size - 1 if dx < 0 else 0)
     return "n_{}_{}[{}]".format(y + dy, x + dx, sub_size - 1 if dx < 0 else 0)
@@ -180,11 +182,11 @@ for y in range(height):
             "y": y,
             "nw": cell(y, x, -1, -1),
             "n": row(y, x, "n"),
-            "ne": cell(y, x, 1, -1),
+            "ne": cell(y, x, -1, 1),
             "e": row(y, x, "e"),
             "se": cell(y, x, 1, 1),
             "s": row(y, x, "s"),
-            "sw": cell(y, x, -1, 1),
+            "sw": cell(y, x, 1, -1),
             "w": row(y, x, "w"),
             "slice": wireslice(x),
             "row_select_slice": "{}:0".format(ceil(log2(sub_size)) - 1),

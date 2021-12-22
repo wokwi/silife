@@ -92,11 +92,11 @@ module silife_matrix_16x16 (
 
       .i_nw(i_nw),
       .i_n (i_n[7:0]),
-      .i_ne(i_w[1]),
+      .i_ne(i_n[8]),
       .i_e (w_0_1),
       .i_se(n_1_1[0]),
       .i_s (n_1_0),
-      .i_sw(i_n[1]),
+      .i_sw(i_w[8]),
       .i_w (i_w[7:0]),
 
       .o_n(n_0_0),
@@ -128,11 +128,11 @@ module silife_matrix_16x16 (
 
       .i_nw(i_n[7]),
       .i_n (i_n[15:8]),
-      .i_ne(n_1_0[7]),
+      .i_ne(i_ne),
       .i_e (i_e[7:0]),
-      .i_se(i_e[1]),
+      .i_se(i_e[8]),
       .i_s (n_1_1),
-      .i_sw(i_ne),
+      .i_sw(n_1_0[7]),
       .i_w (e_0_0),
 
       .o_n(n_0_1),
@@ -164,11 +164,11 @@ module silife_matrix_16x16 (
 
       .i_nw(i_w[7]),
       .i_n (s_0_0),
-      .i_ne(i_sw),
+      .i_ne(s_0_1[0]),
       .i_e (w_1_1),
-      .i_se(i_s[1]),
+      .i_se(i_s[8]),
       .i_s (i_s[7:0]),
-      .i_sw(s_0_1[0]),
+      .i_sw(i_sw),
       .i_w (i_w[15:8]),
 
       .o_n(n_1_0),
@@ -200,11 +200,11 @@ module silife_matrix_16x16 (
 
       .i_nw(s_0_0[7]),
       .i_n (s_0_1),
-      .i_ne(i_s[7]),
+      .i_ne(i_e[7]),
       .i_e (i_e[15:8]),
       .i_se(i_se),
       .i_s (i_s[15:8]),
-      .i_sw(i_e[7]),
+      .i_sw(i_s[7]),
       .i_w (e_1_0),
 
       .o_n(n_1_1),
