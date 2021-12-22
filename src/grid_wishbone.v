@@ -1,4 +1,4 @@
-module silife_matrix_wishbone #(
+module silife_grid_wishbone #(
     parameter WIDTH  = 8,
     parameter HEIGHT = 8
 ) (

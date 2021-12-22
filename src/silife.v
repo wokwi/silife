@@ -48,14 +48,14 @@ module silife #(
   /* Wishbone interface */
   reg wb_read_ack;
   reg wb_write_ack;
-  wire wb_matrix_ack;
-  wire [31:0] wb_matrix_data;
+  wire wb_grid_ack;
+  wire [31:0] wb_grid_data;
 
-  assign o_wb_ack = wb_read_ack | wb_write_ack | (wb_matrix_select && wb_matrix_ack);
+  assign o_wb_ack = wb_read_ack | wb_write_ack | (wb_grid_select && wb_grid_ack);
   wire wb_read = i_wb_stb && i_wb_cyc && !i_wb_we;
   wire wb_write = i_wb_stb && i_wb_cyc && i_wb_we;
   wire [23:0] wb_addr = i_wb_addr[23:0];
-  wire wb_matrix_select = i_wb_addr[23:12] == 12'h001;
+  wire wb_grid_select = i_wb_addr[23:12] == 12'h001;
 
   wire [WIDTH-1:0] clear_cells;
   wire [WIDTH-1:0] set_cells;
@@ -76,38 +76,38 @@ module silife #(
     end
   endfunction
 
-  wire [string_bits-1:0] row00 = row_to_string(clk, matrix.cell_values['d00*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row01 = row_to_string(clk, matrix.cell_values['d01*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row02 = row_to_string(clk, matrix.cell_values['d02*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row03 = row_to_string(clk, matrix.cell_values['d03*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row04 = row_to_string(clk, matrix.cell_values['d04*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row05 = row_to_string(clk, matrix.cell_values['d05*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row06 = row_to_string(clk, matrix.cell_values['d06*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row07 = row_to_string(clk, matrix.cell_values['d07*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row08 = row_to_string(clk, matrix.cell_values['d08*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row09 = row_to_string(clk, matrix.cell_values['d09*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row10 = row_to_string(clk, matrix.cell_values['d10*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row11 = row_to_string(clk, matrix.cell_values['d11*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row12 = row_to_string(clk, matrix.cell_values['d12*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row13 = row_to_string(clk, matrix.cell_values['d13*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row14 = row_to_string(clk, matrix.cell_values['d14*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row15 = row_to_string(clk, matrix.cell_values['d15*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row16 = row_to_string(clk, matrix.cell_values['d16*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row17 = row_to_string(clk, matrix.cell_values['d17*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row18 = row_to_string(clk, matrix.cell_values['d18*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row19 = row_to_string(clk, matrix.cell_values['d19*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row20 = row_to_string(clk, matrix.cell_values['d20*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row21 = row_to_string(clk, matrix.cell_values['d21*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row22 = row_to_string(clk, matrix.cell_values['d22*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row23 = row_to_string(clk, matrix.cell_values['d23*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row24 = row_to_string(clk, matrix.cell_values['d24*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row25 = row_to_string(clk, matrix.cell_values['d25*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row26 = row_to_string(clk, matrix.cell_values['d26*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row27 = row_to_string(clk, matrix.cell_values['d27*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row28 = row_to_string(clk, matrix.cell_values['d28*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row29 = row_to_string(clk, matrix.cell_values['d29*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row30 = row_to_string(clk, matrix.cell_values['d30*WIDTH+:WIDTH]);
-  wire [string_bits-1:0] row31 = row_to_string(clk, matrix.cell_values['d31*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row00 = row_to_string(clk, grid.cell_values['d00*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row01 = row_to_string(clk, grid.cell_values['d01*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row02 = row_to_string(clk, grid.cell_values['d02*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row03 = row_to_string(clk, grid.cell_values['d03*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row04 = row_to_string(clk, grid.cell_values['d04*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row05 = row_to_string(clk, grid.cell_values['d05*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row06 = row_to_string(clk, grid.cell_values['d06*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row07 = row_to_string(clk, grid.cell_values['d07*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row08 = row_to_string(clk, grid.cell_values['d08*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row09 = row_to_string(clk, grid.cell_values['d09*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row10 = row_to_string(clk, grid.cell_values['d10*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row11 = row_to_string(clk, grid.cell_values['d11*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row12 = row_to_string(clk, grid.cell_values['d12*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row13 = row_to_string(clk, grid.cell_values['d13*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row14 = row_to_string(clk, grid.cell_values['d14*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row15 = row_to_string(clk, grid.cell_values['d15*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row16 = row_to_string(clk, grid.cell_values['d16*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row17 = row_to_string(clk, grid.cell_values['d17*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row18 = row_to_string(clk, grid.cell_values['d18*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row19 = row_to_string(clk, grid.cell_values['d19*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row20 = row_to_string(clk, grid.cell_values['d20*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row21 = row_to_string(clk, grid.cell_values['d21*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row22 = row_to_string(clk, grid.cell_values['d22*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row23 = row_to_string(clk, grid.cell_values['d23*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row24 = row_to_string(clk, grid.cell_values['d24*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row25 = row_to_string(clk, grid.cell_values['d25*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row26 = row_to_string(clk, grid.cell_values['d26*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row27 = row_to_string(clk, grid.cell_values['d27*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row28 = row_to_string(clk, grid.cell_values['d28*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row29 = row_to_string(clk, grid.cell_values['d29*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row30 = row_to_string(clk, grid.cell_values['d30*WIDTH+:WIDTH]);
+  wire [string_bits-1:0] row31 = row_to_string(clk, grid.cell_values['d31*WIDTH+:WIDTH]);
 `endif
 
   silife_max7219 #(
@@ -129,7 +129,7 @@ module silife #(
       .o_row_select(row_select_scan)
   );
 
-  silife_matrix_32x32 matrix (
+  silife_grid_32x32 grid (
       .reset(reset),
       .clk(clk),
       .enable(enable || clk_pulse),
@@ -149,10 +149,10 @@ module silife #(
       .i_w({HEIGHT{1'b0}})
   );
 
-  silife_matrix_wishbone #(
+  silife_grid_wishbone #(
       .WIDTH (WIDTH),
       .HEIGHT(HEIGHT)
-  ) matrix_wishbone (
+  ) grid_wishbone (
       .reset(reset),
       .clk  (clk),
 
@@ -162,12 +162,12 @@ module silife #(
       .row_select(row_select),
 
       .i_wb_cyc (i_wb_cyc),
-      .i_wb_stb (i_wb_stb && wb_matrix_select),
+      .i_wb_stb (i_wb_stb && wb_grid_select),
       .i_wb_we  (i_wb_we),
       .i_wb_addr(i_wb_addr),
       .i_wb_data(i_wb_data),
-      .o_wb_ack (wb_matrix_ack),
-      .o_wb_data(wb_matrix_data)
+      .o_wb_ack (wb_grid_ack),
+      .o_wb_data(wb_grid_data)
   );
 
   // Wishbone reads
@@ -182,7 +182,7 @@ module silife #(
         REG_MAX7219_CONFIG: o_wb_data <= {30'b0, max7219_serpentine, max7219_reverse_columns};
         REG_MAX7219_BRIGHTNESS: o_wb_data <= {28'b0, max7219_brightness};
         default: begin
-          o_wb_data <= wb_matrix_data;
+          o_wb_data <= wb_grid_data;
         end
       endcase
       wb_read_ack <= 1;

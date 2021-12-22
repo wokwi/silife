@@ -2,31 +2,31 @@
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
 [*] Thu Dec  2 15:28:23 2021
 [*]
-[dumpfile] "/mnt/c/p/skullic/matrix_tb.vcd"
+[dumpfile] "/mnt/c/p/skullic/grid_tb.vcd"
 [dumpfile_mtime] "Thu Dec  2 15:27:45 2021"
 [dumpfile_size] 50801
-[savefile] "/mnt/c/p/skullic/test/matrix_tb.gtkw"
+[savefile] "/mnt/c/p/skullic/test/grid_tb.gtkw"
 [timestart] 0
 [size] 1000 600
 [pos] -1 -1
 *-14.231153 16150 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
-[treeopen] test_silife_matrix.
+[treeopen] test_silife_grid.
 [sst_width] 214
 [signals_width] 110
 [sst_expanded] 1
 [sst_vpaned_height] 152
 @29
-test_silife_matrix.clk
+test_silife_grid.clk
 @28
-test_silife_matrix.reset
+test_silife_grid.reset
 @820
-test_silife_matrix.row0[63:0]
-test_silife_matrix.row1[63:0]
-test_silife_matrix.row2[63:0]
-test_silife_matrix.row3[63:0]
-test_silife_matrix.row4[63:0]
-test_silife_matrix.row5[63:0]
-test_silife_matrix.row6[63:0]
-test_silife_matrix.row7[63:0]
+test_silife_grid.row0[63:0]
+test_silife_grid.row1[63:0]
+test_silife_grid.row2[63:0]
+test_silife_grid.row3[63:0]
+test_silife_grid.row4[63:0]
+test_silife_grid.row5[63:0]
+test_silife_grid.row6[63:0]
+test_silife_grid.row7[63:0]
 [pattern_trace] 1
 [pattern_trace] 0

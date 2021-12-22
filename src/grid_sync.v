@@ -10,7 +10,7 @@
    - i_edge always depends on o_cells[0], so it should be stable 3 clk cycles
      after the first rising edge of i_sync_clk$syn.
 */
-module matrix_sync #(
+module silife_grid_sync #(
     parameter WIDTH = 32
 ) (
     input wire reset,

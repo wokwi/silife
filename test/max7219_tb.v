@@ -10,8 +10,8 @@ module test_silife_max7219 ();
   reg clk;
   reg enable;
 
-  reg [31:0][31:0] matrix_cells;
-  wire [31:0] cells = matrix_cells[row_select];
+  reg [31:0][31:0] grid_cells;
+  wire [31:0] cells = grid_cells[row_select];
   wire [4:0] row_select;
 
   wire spi_sck;
@@ -47,16 +47,16 @@ module test_silife_max7219 ();
   initial begin
     reset <= 1;
     enable <= 0;
-    matrix_cells <= 0;
+    grid_cells <= 0;
     #10 reset <= 0;
     #20 enable <= 1;
-    matrix_cells[0] = 8'h20;
-    matrix_cells[4] = 32'h54443424;
-    matrix_cells[6] = 8'h66;
-    matrix_cells[7] = 8'haa;
-    matrix_cells[8+4] = 32'h55453525;
-    matrix_cells[16+4] = 32'h11223344;
-    matrix_cells[24+4] = 32'h4faa11ff;
+    grid_cells[0] = 8'h20;
+    grid_cells[4] = 32'h54443424;
+    grid_cells[6] = 8'h66;
+    grid_cells[7] = 8'haa;
+    grid_cells[8+4] = 32'h55453525;
+    grid_cells[16+4] = 32'h11223344;
+    grid_cells[24+4] = 32'h4faa11ff;
     #180000 $finish();
   end
 
