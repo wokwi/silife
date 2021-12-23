@@ -1,4 +1,4 @@
-`define SILIFE_TEST
+`define SILIFE_TEST 
 
 module dump ();
   initial begin
