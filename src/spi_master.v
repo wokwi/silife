@@ -5,7 +5,9 @@
 //
 `timescale 1ns / 1ps
 
-module silife_spi_master #(parameter HALF_BIT_CYCLES = 2) (
+module silife_spi_master #(
+    parameter HALF_BIT_CYCLES = 2
+) (
     input wire reset,
     input wire clk,
 
@@ -31,7 +33,7 @@ module silife_spi_master #(parameter HALF_BIT_CYCLES = 2) (
     end else begin
       if (finish) begin
         finish <= 0;
-        o_sck  <= 0;
+        o_sck <= 0;
         o_busy <= 0;
         clk_count <= 0;
       end else if (o_busy) begin
