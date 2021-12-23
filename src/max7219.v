@@ -161,7 +161,7 @@ module silife_max7219 #(
                 column_index <= column_index;
                 o_row_select <= o_row_select;
                 spi_start <= 0;
-                if (max7219_row == 8) begin
+                if (max7219_row == 8 && max7219_enabled) begin
                   if (!i_frame) state <= StatePause;
                 end
               end else begin
@@ -184,10 +184,10 @@ module silife_max7219 #(
                 o_cs <= 1;
               end else begin
                 max7219_enabled <= 1;
-                state <= StateData;
                 o_cs <= 0;
                 segment_index <= 0;
                 spi_start <= 1;
+                state <= i_frame ? StateData : StatePause;
               end
             end
           end
