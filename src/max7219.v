@@ -69,8 +69,22 @@ module silife_max7219 #(
   endfunction
 
   wire [31:0] cells = rotate180 ? reverse32(i_cells) : i_cells;
-  wire [ 7:0] row_data = cells[column_offset+:8];
-  wire [ 7:0] row_data_rev = reverse8(row_data);
+  wire [7:0] row_data = cells[column_offset+:8];
+  wire [7:0] row_data_rev = reverse8(row_data);
+
+  // Debug output
+  reg [63:0] dbg_state_name;
+
+  always @(*) begin
+    case (state)
+      StateInit: dbg_state_name <= "Init";
+      StateStart: dbg_state_name <= "Start";
+      StateData: dbg_state_name <= "Data";
+      StateEnable: dbg_state_name <= "Enable";
+      StatePause: dbg_state_name <= "Pause";
+      default: dbg_state_name <= "Invalid";
+    endcase
+  end
 
   silife_spi_master spim (
       .reset(reset),
@@ -181,19 +195,29 @@ module silife_max7219 #(
               if (!o_cs) begin
                 column_index <= 2'h0;
                 o_row_select <= {2'b11, 3'b000};
-                o_cs <= 1;
-              end else begin
                 max7219_enabled <= 1;
+                o_cs <= 1;
+                if (max7219_row == 8 && max7219_enabled) begin
+                  if (!i_frame) state <= StatePause;
+                end
+              end else begin
                 o_cs <= 0;
                 segment_index <= 0;
                 spi_start <= 1;
-                state <= i_frame ? StateData : StatePause;
+                state <= StateData;
               end
             end
           end
           default: begin
             /* We are paused */
-            if (i_frame) state <= StateData;
+            segment_index <= 0;
+            column_index  <= 2'h0;
+            o_row_select  <= {2'b11, 3'b000};
+            if (i_frame) begin
+              o_cs <= 0;
+              state <= StateData;
+              spi_start <= 1;
+            end
           end
         endcase
       end
