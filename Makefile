@@ -46,6 +46,8 @@ test_max7219:
 test_silife:
 	iverilog -I src -s silife -s dump -o silife_test.out test/dump_silife.v src/silife.v src/cell.v src/grid_8x8.v src/grid_16x16_ho.v src/grid_32x32_ho.v src/grid_wishbone.v src/max7219.v src/spi_master.v
 	MODULE=test.test_silife vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus ./silife_test.out
+
+test_silife_show: test_silife
 	gtkwave silife_test.vcd test/silife_test.gtkw
 
 format:
