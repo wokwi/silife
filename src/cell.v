@@ -15,7 +15,8 @@ module silife_cell (
     input  wire s,
     input  wire sw,
     input  wire w,
-    output wire out
+    output wire out,
+    output reg [4:0] history
 );
 
   reg state;
@@ -32,8 +33,11 @@ module silife_cell (
 
   always @(posedge clk) begin
     if (reset) state <= 0;
-    else if (revive) state <= 1;
-    else if (enable) state <= (state && living_neighbors == 2) || living_neighbors == 3;
+    else begin 
+      if (revive) state <= 1;
+      else if (enable) state <= (state && living_neighbors == 2) || living_neighbors == 3;
+      history <= {history[3:0], state};
+    end
   end
 
 endmodule

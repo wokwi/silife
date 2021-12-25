@@ -40,16 +40,32 @@ module silife_grid_{width}x{height} (
 
     /* Second port: read only */
     input  wire [{row_select_bits}:0] row_select2,
-    output wire [{width_minus1}:0] cells2
+    output reg  [{width_minus1}:0] cells2,
+    input  wire [2:0] history_select
 );
 
   wire [{offset_bits}:0] row_offset = {{row_select, {col_select_bits}'b0}};
   assign cells = cell_values[row_offset+:{width}];
 
   wire [{offset_bits}:0] row_offset2 = {{row_select2, {col_select_bits}'b0}};
-  assign cells2 = cell_values[row_offset2+:{width}];
+
+  always @(*) begin
+    case (history_select)
+        5: cells2 = history5[row_offset2+:{width}];
+        4: cells2 = history4[row_offset2+:{width}];
+        3: cells2 = history3[row_offset2+:{width}];
+        2: cells2 = history2[row_offset2+:{width}];
+        1: cells2 = history1[row_offset2+:{width}];
+        default: cells2 = cell_values[row_offset2+:{width}];
+    endcase
+  end
 
   wire [{cell_count}-1:0] cell_values;
+  wire [{cell_count}-1:0] history1;
+  wire [{cell_count}-1:0] history2;
+  wire [{cell_count}-1:0] history3;
+  wire [{cell_count}-1:0] history4;
+  wire [{cell_count}-1:0] history5;
 
   {cells}
 endmodule
@@ -57,19 +73,20 @@ endmodule
 
 cell_template = """
   silife_cell cell_{y}_{x} (
-      .reset (reset || (row_select == {y} && clear_cells[{x}])),
-      .clk   (clk),
-      .enable(enable),
-      .revive(row_select == {y} && set_cells[{x}]),
-      .nw    ({nw}),
-      .n     ({n}),
-      .ne    ({ne}),
-      .e     ({e}),
-      .se    ({se}),
-      .s     ({s}),
-      .sw    ({sw}),
-      .w     ({w}),
-      .out   (cell_values[{index}])
+      .reset  (reset || (row_select == {y} && clear_cells[{x}])),
+      .clk    (clk),
+      .enable (enable),
+      .revive (row_select == {y} && set_cells[{x}]),
+      .nw     ({nw}),
+      .n      ({n}),
+      .ne     ({ne}),
+      .e      ({e}),
+      .se     ({se}),
+      .s      ({s}),
+      .sw     ({sw}),
+      .w      ({w}),
+      .out    (cell_values[{index}]),
+      .history({{history5[{index}], history4[{index}], history3[{index}], history2[{index}], history1[{index}]}})
   );"""
 
 
@@ -137,6 +154,6 @@ print(
         offset_bits=width_bits + height_bits - 1,
         row_select_bits=height_bits - 1,
         col_select_bits=width_bits,
-        cell_count=width * height,
+        cell_count=width * height
     ).strip()
 )
