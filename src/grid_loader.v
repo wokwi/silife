@@ -137,38 +137,38 @@ module silife_grid_loader #(
               state <= StateSegmentAddress;
               selected_segment <= 15'b0;
               selected_row <= 16'b0;
-              bit_counter <= 16'b0;
+              bit_counter <= 16'd14;
             end
           end
           StateConfigure: begin
             if (load_data) local_address <= local_address + 1;
           end
           StateSegmentAddress: begin
-            bit_counter <= bit_counter + 1;
+            bit_counter <= bit_counter - 1;
             selected_segment[bit_counter[3:0]] <= load_data;
-            if (bit_counter == 16'd14) begin
-              bit_counter <= 0;
+            if (bit_counter == 16'd0) begin
+              bit_counter <= 16'd15;
               state <= StateRowAddress;
             end
           end
           StateRowAddress: begin
-            bit_counter <= bit_counter + 1;
-            selected_row[bit_counter[3:0]] <= load_data;
-            if (bit_counter == 16'd15) begin
-              bit_counter <= 0;
+            bit_counter <= bit_counter - 1;
+            selected_row[15-bit_counter[3:0]] <= load_data;
+            if (bit_counter == 0) begin
+              bit_counter <= WIDTH - 1;
               state <= StateCellData;
             end
           end
           StateCellData: begin
-            bit_counter  <= bit_counter + 1;
+            bit_counter  <= bit_counter - 1;
             o_row_select <= selected_row[ROW_BITS-1:0];
             if (selected) begin
               if (load_data) o_set_cells[cell_index] <= 1'b1;
               else o_clear_cells[cell_index] <= 1'b1;
             end
-            if (bit_counter == WIDTH - 1) begin
+            if (bit_counter == 0) begin
               selected_row <= selected_row + 1;
-              bit_counter  <= 0;
+              bit_counter  <= WIDTH - 1;
             end
           end
         endcase
