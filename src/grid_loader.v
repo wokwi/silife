@@ -24,6 +24,11 @@ module silife_grid_loader #(
     output reg [WIDTH-1:0] o_set_cells,
     output reg [WIDTH-1:0] o_clear_cells,
 
+    /* Control interface */
+    output reg o_control_write,
+    output reg [23:0] o_control_addr,
+    output reg [31:0] o_control_data,
+
     /* Debug interface */
     output wire [14:0] o_dbg_local_address
 );
@@ -94,6 +99,8 @@ module silife_grid_loader #(
   localparam StateSegmentAddress = 2;
   localparam StateRowAddress = 3;
   localparam StateCellData = 4;
+  localparam StateControlAddress = 5;
+  localparam StateControlData = 6;
 
   reg [14:0] local_address;
   reg [14:0] selected_segment;
@@ -120,8 +127,9 @@ module silife_grid_loader #(
       o_clear_cells <= {WIDTH{1'b0}};
     end else begin
       load_clk_past <= load_clk;
-      o_set_cells   <= {WIDTH{1'b0}};
+      o_set_cells <= {WIDTH{1'b0}};
       o_clear_cells <= {WIDTH{1'b0}};
+      o_control_write <= 0;
       if (load_cs) begin
         state <= StateInit;
         selected_segment <= 15'b0;
@@ -153,10 +161,15 @@ module silife_grid_loader #(
           end
           StateRowAddress: begin
             bit_counter <= bit_counter - 1;
-            selected_row[15-bit_counter[3:0]] <= load_data;
+            selected_row[bit_counter[3:0]] <= load_data;
             if (bit_counter == 0) begin
-              bit_counter <= WIDTH - 1;
-              state <= StateCellData;
+              if ({selected_row[15:1], load_data} == 16'hffff) begin
+                bit_counter <= 31;
+                state <= StateControlAddress;
+              end else begin
+                bit_counter <= WIDTH - 1;
+                state <= StateCellData;
+              end
             end
           end
           StateCellData: begin
@@ -169,6 +182,23 @@ module silife_grid_loader #(
             if (bit_counter == 0) begin
               selected_row <= selected_row + 1;
               bit_counter  <= WIDTH - 1;
+            end
+          end
+          StateControlAddress: begin
+            bit_counter <= bit_counter - 1;
+            if (bit_counter[4:0] <= 23) o_control_addr[bit_counter[4:0]] <= load_data;
+            if (bit_counter == 0) begin
+              bit_counter <= 31;
+              state <= StateControlData;
+            end
+          end
+          StateControlData: begin
+            bit_counter <= bit_counter - 1;
+            o_control_data[bit_counter[4:0]] <= load_data;
+            if (bit_counter == 0) begin
+              o_control_write <= 1;
+              bit_counter <= 31;
+              state <= StateControlAddress;
             end
           end
         endcase

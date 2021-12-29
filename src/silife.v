@@ -70,6 +70,10 @@ module silife #(
   wire [WIDTH-1:0] spi_loader_clear_cells;
   wire [14:0] dbg_local_address;
 
+  wire spi_loader_control_write;
+  wire [23:0] spi_loader_control_addr;
+  wire [31:0] spi_loader_control_data;
+
   /* MAX7219 interface */
   reg max7219_enable;
   reg max7219_pause;
@@ -124,6 +128,11 @@ module silife #(
   wire [WIDTH-1:0] cells_scan;
   wire [ROW_BITS-1:0] wb_row_select;
   wire [ROW_BITS-1:0] row_select_scan;
+
+  /* Unified control interface */
+  wire control_reg_write = wb_write | spi_loader_control_write;
+  wire [23:0] control_reg_addr = spi_loader_control_write ? spi_loader_control_addr : wb_addr;
+  wire [31:0] control_reg_data = spi_loader_control_write ? spi_loader_control_data : i_wb_data;
 
 `ifdef SILIFE_TEST
   /* Pretty output for the test bench */
@@ -232,6 +241,10 @@ module silife #(
       .o_set_cells(spi_loader_set_cells),
       .o_clear_cells(spi_loader_clear_cells),
 
+      .o_control_write(spi_loader_control_write),
+      .o_control_addr (spi_loader_control_addr),
+      .o_control_data (spi_loader_control_data),
+
       .o_dbg_local_address(dbg_local_address)
   );
 
@@ -330,33 +343,33 @@ module silife #(
       sync_en_s <= 1'b0;
       sync_en_w <= 1'b0;
     end else begin
-      if (wb_write) begin
-        case (wb_addr)
+      if (control_reg_write) begin
+        case (control_reg_addr)
           REG_CTRL: begin
-            enable <= i_wb_data[0];
-            clk_pulse <= i_wb_data[1];
+            enable <= control_reg_data[0];
+            clk_pulse <= control_reg_data[1];
           end
           REG_CONFIG: begin
-            grid_wrap <= i_wb_data[0];
-            sync_en_n = i_wb_data[3];
-            sync_en_e = i_wb_data[4];
-            sync_en_s = i_wb_data[5];
-            sync_en_w = i_wb_data[6];
+            grid_wrap <= control_reg_data[0];
+            sync_en_n = control_reg_data[3];
+            sync_en_e = control_reg_data[4];
+            sync_en_s = control_reg_data[5];
+            sync_en_w = control_reg_data[6];
           end
           REG_MAX7219_CTRL: begin
-            max7219_enable <= i_wb_data[0];
-            max7219_pause  <= i_wb_data[1];
-            max7219_frame  <= i_wb_data[2];
+            max7219_enable <= control_reg_data[0];
+            max7219_pause  <= control_reg_data[1];
+            max7219_frame  <= control_reg_data[2];
           end
           REG_MAX7219_CONFIG: begin
-            max7219_reverse_columns <= i_wb_data[0];
-            max7219_serpentine <= i_wb_data[1];
+            max7219_reverse_columns <= control_reg_data[0];
+            max7219_serpentine <= control_reg_data[1];
           end
           REG_MAX7219_BRIGHTNESS: begin
-            max7219_brightness <= i_wb_data[3:0];
+            max7219_brightness <= control_reg_data[3:0];
           end
         endcase
-        wb_write_ack <= 1;
+        if (wb_write) wb_write_ack <= 1;
       end else begin
         wb_write_ack <= 0;
         if (max7219_busy) max7219_frame <= 0;
