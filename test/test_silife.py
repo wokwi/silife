@@ -39,6 +39,8 @@ REG_MAX7219_SERPENTINE = bit(1)
 
 reg_max7219_brightness = 0x3000_0018
 
+reg_dbg_local_address = 0x3000_0020
+
 wb_grid_start = 0x3000_1000
 
 wishbone_signals = {
@@ -50,6 +52,8 @@ wishbone_signals = {
     "datrd": "o_wb_data",
     "ack": "o_wb_ack",
 }
+
+MATRIX_BROADCAST_ADDR = 0x7FFF
 
 test_max7219 = os.environ.get("TEST_MAX7219") != None
 
@@ -121,9 +125,9 @@ class SiLifeController:
         while await self.wb_read(reg_max7219_ctrl) & REG_MAX7219_BUSY:
             pass
 
-    async def init_spi_loader(self, matrix_count=32):
+    async def init_spi_loader(self, matrix_count=32, first_address=0):
         await self._loader_spi.start()
-        await self._loader_spi.write(1, bits=1)
+        await self._loader_spi.write(0xFFFFFFFF, bits=first_address + 1)
         await self._loader_spi.write(0, bits=matrix_count)
         await self._loader_spi.end()
 
@@ -321,5 +325,57 @@ async def test_spi_loader(dut):
         "**      ",
         "**      ",
     ]
+
+    clock_sig.kill()
+
+
+@cocotb.test()
+async def test_spi_loader_broadcast(dut):
+    silife = await create_silife(dut)
+    clock_sig = await make_clock(dut, 10)
+    await reset(dut)
+
+    await silife.init_spi_loader()
+
+    # Load some grid state through the broadcast address
+    await silife.spi_loader_write_grid(
+        [
+            "  **** *",
+            " *      ",
+            "  ***  *",
+            "     * *",
+            "     * *",
+            " ****  *",
+            "        ",
+            "********",
+        ],
+        matrix_id=MATRIX_BROADCAST_ADDR,
+    )
+
+    # Extra two clock cycles for the data to propagate
+    await ClockCycles(dut.clk, 2)
+
+    assert await silife.read_grid((8, 8)) == [
+        "  **** *",
+        " *      ",
+        "  ***  *",
+        "     * *",
+        "     * *",
+        " ****  *",
+        "        ",
+        "********",
+    ]
+
+    clock_sig.kill()
+
+
+@cocotb.test()
+async def test_spi_loader_addr(dut):
+    silife = await create_silife(dut)
+    clock_sig = await make_clock(dut, 10)
+    await reset(dut)
+
+    await silife.init_spi_loader(first_address=11)
+    assert await silife.wb_read(reg_dbg_local_address) == 11
 
     clock_sig.kill()
