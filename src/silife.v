@@ -59,6 +59,7 @@ module silife #(
   localparam REG_MAX7219_CTRL = 24'h010;
   localparam REG_MAX7219_CONFIG = 24'h014;
   localparam REG_MAX7219_BRIGHTNESS = 24'h018;
+  localparam REG_DBG_LOCAL_ADDRESS = 24'h020;
 
   localparam ROW_BITS = $clog2(HEIGHT);
 
@@ -67,6 +68,7 @@ module silife #(
   wire [ROW_BITS-1:0] spi_loader_row_select;
   wire [WIDTH-1:0] spi_loader_set_cells;
   wire [WIDTH-1:0] spi_loader_clear_cells;
+  wire [14:0] dbg_local_address;
 
   /* MAX7219 interface */
   reg max7219_enable;
@@ -228,7 +230,9 @@ module silife #(
       .o_selected(spi_loader_selected),
       .o_row_select(spi_loader_row_select),
       .o_set_cells(spi_loader_set_cells),
-      .o_clear_cells(spi_loader_clear_cells)
+      .o_clear_cells(spi_loader_clear_cells),
+
+      .o_dbg_local_address(dbg_local_address)
   );
 
   silife_grid_sync #(
@@ -299,6 +303,7 @@ module silife #(
         REG_MAX7219_CTRL: o_wb_data <= {28'b0, max7219_busy, 1'b0, max7219_pause, max7219_enable};
         REG_MAX7219_CONFIG: o_wb_data <= {30'b0, max7219_serpentine, max7219_reverse_columns};
         REG_MAX7219_BRIGHTNESS: o_wb_data <= {28'b0, max7219_brightness};
+        REG_DBG_LOCAL_ADDRESS: o_wb_data <= {17'b0, dbg_local_address};
         default: begin
           o_wb_data <= wb_grid_data;
         end

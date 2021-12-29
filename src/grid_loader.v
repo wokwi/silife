@@ -22,7 +22,10 @@ module silife_grid_loader #(
     output wire o_selected,
     output reg [ROW_BITS-1:0] o_row_select,
     output reg [WIDTH-1:0] o_set_cells,
-    output reg [WIDTH-1:0] o_clear_cells
+    output reg [WIDTH-1:0] o_clear_cells,
+
+    /* Debug interface */
+    output wire [14:0] o_dbg_local_address
 );
 
   wire load_cs;
@@ -71,10 +74,10 @@ module silife_grid_loader #(
 
   always @(posedge i_load_clk$load or posedge i_load_cs$load or posedge reset) begin
     if (reset) begin
-      first_bit_in$load <= 1'b1;
+      first_bit_in$load   <= 1'b1;
       configure_mode$load <= 1'b0;
     end else if (i_load_cs$load) begin
-      first_bit_in$load <= 1'b1;
+      first_bit_in$load   <= 1'b1;
       configure_mode$load <= 1'b0;
     end else begin
       if (first_bit_in$load) begin
@@ -95,8 +98,9 @@ module silife_grid_loader #(
   reg [14:0] local_address;
   reg [14:0] selected_segment;
   reg [15:0] selected_row;
+  assign o_dbg_local_address = local_address;
 
-  wire selected = local_address == selected_segment;
+  wire selected = local_address == selected_segment || selected_segment == 15'h7fff;
   assign o_selected = selected && state == StateCellData;
 
   reg [2:0] state;
