@@ -40,6 +40,7 @@ module silife_grid_sync_edge #(
       o_sync_out$syn <= 1'b0;
       bit_index_out$syn <= 0;
     end else begin
+      bit_index_out$syn <= bit_index_out$syn + 1;
       o_sync_out$syn <= send_corner$syn ? i_corner : i_cells[cell_index_out$syn];
     end
   end
