@@ -22,24 +22,33 @@ module silife_grid_sync_edge #(
     output reg  o_sync_out$syn,
     output reg  o_busy,
 
-    input wire i_edge,
+    input wire i_corner,
     input wire [WIDTH-1:0] i_cells,
-    output reg o_edge,
-    output reg [WIDTH-1:0] o_cells
+    output reg o_corner,
+    output reg [WIDTH-1:0] o_cells,
+    output reg o_last_cell$syn
 );
 
   localparam width_bits = $clog2(WIDTH);
 
   reg [width_bits:0] bit_index_out$syn;
   wire [width_bits-1:0] cell_index_out$syn = bit_index_out$syn[width_bits-1:0];
-  wire send_edge$syn = bit_index_out$syn[width_bits];
+  wire send_corner$syn = bit_index_out$syn[width_bits];
 
   always @(negedge i_sync_clk$syn or negedge i_sync_active$syn) begin
     if (!i_sync_active$syn) begin
       o_sync_out$syn <= 1'b0;
       bit_index_out$syn <= 0;
     end else begin
-      o_sync_out$syn <= send_edge$syn ? i_edge : i_cells[cell_index_out$syn];
+      o_sync_out$syn <= send_corner$syn ? i_corner : i_cells[cell_index_out$syn];
+    end
+  end
+
+  always @(posedge i_sync_clk$syn or negedge i_sync_active$syn) begin
+    if (!i_sync_active$syn) begin
+      o_last_cell$syn <= 0;
+    end else begin
+      o_last_cell$syn <= i_sync_in$syn;
     end
   end
 
@@ -58,7 +67,7 @@ module silife_grid_sync_edge #(
 
   always @(posedge clk) begin
     if (reset) begin
-      o_edge <= 1'b0;
+      o_corner <= 1'b0;
       o_cells <= {WIDTH{1'b0}};
       sync_active_buf <= 2'b00;
       sync_clk_buf <= 2'b00;
@@ -75,8 +84,8 @@ module silife_grid_sync_edge #(
         o_busy <= 0;
       end else if (!prev_sync_clk && sync_clk) begin
         if (recieve_edge) begin
-          o_busy <= 0;
-          o_edge <= sync_in;
+          o_busy   <= 0;
+          o_corner <= sync_in;
         end else begin
           o_busy <= 1;
           o_cells[cell_index_in] <= sync_in;
