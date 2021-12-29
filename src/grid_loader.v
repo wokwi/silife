@@ -153,7 +153,7 @@ module silife_grid_loader #(
           end
           StateRowAddress: begin
             bit_counter <= bit_counter - 1;
-            selected_row[15-bit_counter[3:0]] <= load_data;
+            selected_row[bit_counter[3:0]] <= load_data;
             if (bit_counter == 0) begin
               bit_counter <= WIDTH - 1;
               state <= StateCellData;
