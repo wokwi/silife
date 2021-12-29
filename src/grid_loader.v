@@ -70,7 +70,10 @@ module silife_grid_loader #(
   end
 
   always @(posedge i_load_clk$load or posedge i_load_cs$load or posedge reset) begin
-    if (reset || i_load_cs$load) begin
+    if (reset) begin
+      first_bit_in$load <= 1'b1;
+      configure_mode$load <= 1'b0;
+    end else if (i_load_cs$load) begin
       first_bit_in$load <= 1'b1;
       configure_mode$load <= 1'b0;
     end else begin
