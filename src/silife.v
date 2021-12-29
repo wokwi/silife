@@ -35,10 +35,10 @@ module silife #(
     input  wire i_sync_busy$syn,
 
     // Serial load interface
-    input wire i_load_cs$load,
-    input wire i_load_clk$load,
-    input wire i_load_data$load,
-    input wire o_load_data$load,
+    input  wire i_load_cs$load,
+    input  wire i_load_clk$load,
+    input  wire i_load_data$load,
+    output wire o_load_data$load,
 
     // Wishbone interface
     input  wire        i_wb_cyc,   // wishbone transaction
