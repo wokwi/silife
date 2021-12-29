@@ -5,10 +5,14 @@ import numpy as np
 
 
 class GameOfLife:
-    def __init__(self, width, height):
+    def __init__(self, width, height, wrap = False):
+        self.wrap = wrap
         self.grid = np.zeros(shape=(height, width), dtype=int)
 
     def read_cell(self, y, x):
+        if self.wrap:
+            x = (x + self.grid.shape[0]) % self.grid.shape[0]
+            y = (y + self.grid.shape[1]) % self.grid.shape[1]
         if (
             (y < 0)
             or (x < 0)

@@ -5,85 +5,126 @@
 //
 `timescale 1ns / 1ps
 
-/* notes: 
-   - i_cells is must not change while sync_active$syn is high 
-   - i_edge always depends on o_cells[0], so it should be stable 3 clk cycles
-     after the first rising edge of i_sync_clk$syn.
-*/
 module silife_grid_sync #(
-    parameter WIDTH = 32
+    parameter WIDTH  = 32,
+    parameter HEIGHT = 32
 ) (
     input wire reset,
     input wire clk,
 
     input  wire i_sync_clk$syn,
     input  wire i_sync_active$syn,
-    input  wire i_sync_in$syn,
-    output reg  o_sync_out$syn,
-    output reg  o_busy,
+    input  wire i_sync_in_n$syn,
+    input  wire i_sync_in_e$syn,
+    input  wire i_sync_in_s$syn,
+    input  wire i_sync_in_w$syn,
+    output wire o_sync_out_n$syn,
+    output wire o_sync_out_e$syn,
+    output wire o_sync_out_s$syn,
+    output wire o_sync_out_w$syn,
+    output wire o_busy,
 
-    input wire i_edge,
-    input wire [WIDTH-1:0] i_cells,
-    output reg o_edge,
-    output reg [WIDTH-1:0] o_cells
+    input wire [ WIDTH-1:0] i_grid_n,
+    input wire [HEIGHT-1:0] i_grid_e,
+    input wire [ WIDTH-1:0] i_grid_s,
+    input wire [HEIGHT-1:0] i_grid_w,
+
+    output wire [WIDTH-1:0] o_grid_n,
+    output wire o_grid_ne,
+    output wire [HEIGHT-1:0] o_grid_e,
+    output wire o_grid_se,
+    output wire [WIDTH-1:0] o_grid_s,
+    output wire o_grid_sw,
+    output wire [HEIGHT-1:0] o_grid_w,
+    output wire o_grid_nw
 );
 
-  localparam width_bits = $clog2(WIDTH);
+  wire o_busy_n;
+  wire o_busy_e;
+  wire o_busy_s;
+  wire o_busy_w;
+  assign o_busy = o_busy_n | o_busy_e | o_busy_s | o_busy_w;
 
-  reg [width_bits:0] bit_index_out$syn;
-  wire [width_bits-1:0] cell_index_out$syn = bit_index_out$syn[width_bits-1:0];
-  wire send_edge$syn = bit_index_out$syn[width_bits];
+  // Corner synchronization
+  wire grid_n_last$syn;
+  wire grid_e_last$syn;
+  wire grid_s_last$syn;
+  wire grid_w_last$syn;
 
-  always @(negedge i_sync_clk$syn or negedge i_sync_active$syn) begin
-    if (!i_sync_active$syn) begin
-      o_sync_out$syn <= 1'b0;
-      bit_index_out$syn <= 0;
-    end else begin
-      o_sync_out$syn <= send_edge$syn ? i_edge : i_cells[cell_index_out$syn];
-    end
-  end
+  silife_grid_sync_edge #(
+      .WIDTH(WIDTH)
+  ) sync_n (
+      .reset(reset),
+      .clk  (clk),
 
-  reg [width_bits:0] bit_index_in;
-  wire [width_bits-1:0] cell_index_in = bit_index_in[width_bits-1:0];
-  wire recieve_edge = bit_index_in[width_bits];
+      .i_sync_clk$syn(i_sync_clk$syn),
+      .i_sync_active$syn(i_sync_active$syn),
+      .i_sync_in$syn(i_sync_in_n$syn),
+      .o_sync_out$syn(o_sync_out_n$syn),
+      .o_busy(o_busy_n),
 
-  reg [1:0] sync_active_buf;
-  reg [1:0] sync_clk_buf;
-  reg [1:0] sync_in_buf;
+      .i_corner(o_grid_w[0]),
+      .i_cells(i_grid_n),
+      .o_corner(o_grid_ne),
+      .o_cells(o_grid_n),
+      .o_last_cell$syn(grid_n_last$syn)
+  );
 
-  wire sync_clk = sync_clk_buf[1];
-  wire sync_active = sync_active_buf[1];
-  wire sync_in = sync_in_buf[1];
-  reg prev_sync_clk;
+  silife_grid_sync_edge #(
+      .WIDTH(HEIGHT)
+  ) sync_e (
+      .reset(reset),
+      .clk  (clk),
 
-  always @(posedge clk) begin
-    if (reset) begin
-      o_edge <= 1'b0;
-      o_cells <= {WIDTH{1'b0}};
-      sync_active_buf <= 2'b00;
-      sync_clk_buf <= 2'b00;
-      sync_in_buf <= 2'b00;
-      bit_index_in <= 0;
-      prev_sync_clk <= 0;
-    end else begin
-      sync_active_buf <= {sync_active_buf[0], i_sync_active$syn};
-      sync_clk_buf <= {sync_clk_buf[0], i_sync_clk$syn};
-      sync_in_buf <= {sync_in_buf[0], i_sync_in$syn};
-      prev_sync_clk <= sync_clk_buf[1];
-      if (!sync_active) begin
-        bit_index_in <= 0;
-        o_busy <= 0;
-      end else if (!prev_sync_clk && sync_clk) begin
-        if (recieve_edge) begin
-          o_busy <= 0;
-          o_edge <= sync_in;
-        end else begin
-          o_busy <= 1;
-          o_cells[cell_index_in] <= sync_in;
-          bit_index_in <= bit_index_in + 1;
-        end
-      end
-    end
-  end
+      .i_sync_clk$syn(i_sync_clk$syn),
+      .i_sync_active$syn(i_sync_active$syn),
+      .i_sync_in$syn(i_sync_in_e$syn),
+      .o_sync_out$syn(o_sync_out_e$syn),
+      .o_busy(o_busy_e),
+
+      .i_corner(grid_n_last$syn),
+      .i_cells(i_grid_e),
+      .o_corner(o_grid_se),
+      .o_cells(o_grid_e),
+      .o_last_cell$syn(grid_e_last$syn)
+  );
+
+  silife_grid_sync_edge #(
+      .WIDTH(WIDTH)
+  ) sync_s (
+      .reset(reset),
+      .clk  (clk),
+
+      .i_sync_clk$syn(i_sync_clk$syn),
+      .i_sync_active$syn(i_sync_active$syn),
+      .i_sync_in$syn(i_sync_in_s$syn),
+      .o_sync_out$syn(o_sync_out_s$syn),
+      .o_busy(o_busy_s),
+
+      .i_corner(grid_e_last$syn),
+      .i_cells(i_grid_s),
+      .o_corner(o_grid_sw),
+      .o_cells(o_grid_s),
+      .o_last_cell$syn(grid_s_last$syn)
+  );
+
+  silife_grid_sync_edge #(
+      .WIDTH(HEIGHT)
+  ) sync_w (
+      .reset(reset),
+      .clk  (clk),
+
+      .i_sync_clk$syn(i_sync_clk$syn),
+      .i_sync_active$syn(i_sync_active$syn),
+      .i_sync_in$syn(i_sync_in_w$syn),
+      .o_sync_out$syn(o_sync_out_w$syn),
+      .o_busy(o_busy_w),
+
+      .i_corner(o_grid_s[0]),
+      .i_cells(i_grid_w),
+      .o_corner(o_grid_nw),
+      .o_cells(o_grid_w),
+      .o_last_cell$syn(grid_w_last$syn)
+  );
 
 endmodule
