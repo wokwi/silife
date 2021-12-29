@@ -20,6 +20,9 @@ reg_ctrl = 0x3000_0000
 REG_CTRL_EN = bit(0)
 REG_CTRL_PULSE = bit(1)
 
+reg_config = 0x3000_0004
+REG_CONFIG_WRAP = bit(0)
+
 reg_max7219_ctrl = 0x3000_0010
 REG_MAX7219_EN = bit(0)
 REG_MAX7219_PAUSE = bit(1)
@@ -198,7 +201,7 @@ async def test_life(dut):
         await silife.max7219_frame()
 
     # Run many generations of simulation and compare output
-    life = GameOfLife(grid_height, grid_width)
+    life = GameOfLife(grid_height, grid_width, wrap=True)
     life.load(
         [
             "*** *",
@@ -209,10 +212,32 @@ async def test_life(dut):
         ],
         pos=(22, 12),
     )
+    # Add a glider
+    life.load(
+        [
+            " * ",
+            "  *",
+            "***",
+        ],
+        pos=(28, 22),
+    )
     await silife.write_grid(life.dump())
 
+    # Enable wrapping
+    await silife.wb_write(reg_config, REG_CONFIG_WRAP)
+
     for i in range(test_generations):
-        print("Testing generation {} of {}...".format(i + 1, test_generations))
+        print("Testing generation {} of {} (wrap)...".format(i + 1, test_generations))
+        life.step()
+        await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
+        assert await silife.read_grid() == life.dump()
+
+    # Disable wrapping
+    await silife.wb_write(reg_config, 0)
+    life.wrap = False
+
+    for i in range(test_generations):
+        print("Testing generation {} of {} (no wrap)...".format(i + 1, test_generations))
         life.step()
         await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
         assert await silife.read_grid() == life.dump()
