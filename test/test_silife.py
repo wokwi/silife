@@ -147,7 +147,7 @@ class SiLifeController:
         for row in grid:
             for col in row:
                 if col != " ":
-                    value |= bit(grid_width - bit_index - 1)
+                    value |= bit(bit_index)
                 bit_index += 1
             await self._loader_spi.write(value, bits=grid_width)
             bit_index = 0
@@ -296,7 +296,7 @@ async def test_spi_loader(dut):
     clock_sig = await make_clock(dut, 10)
     await reset(dut)
 
-    await silife.init_spi_loader()
+    await silife.init_spi_loader(first_address = 5)
 
     # Load initial grid state
     await silife.spi_loader_write_grid(
@@ -309,7 +309,8 @@ async def test_spi_loader(dut):
             "     *  ",
             "**      ",
             "**      ",
-        ]
+        ],
+        matrix_id=5
     )
 
     # Extra two clock cycles for the data to propagate
