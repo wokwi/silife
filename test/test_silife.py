@@ -1,9 +1,13 @@
+# SPDX-FileCopyrightText: © 2021 Uri Shaked <uri@wokwi.com>
+# SPDX-License-Identifier: MIT
+
 import os
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import ClockCycles
 from cocotbext.wishbone.driver import WishboneMaster, WBOp
 from .game_of_life import GameOfLife
+from .mini_spi import MiniSPI
 
 
 def bit(b):
@@ -69,6 +73,12 @@ class SiLifeController:
     def __init__(self, dut, wishbone):
         self._dut = dut
         self._wishbone = wishbone
+        self._loader_spi = MiniSPI(
+            self._dut.clk,
+            cs=getattr(self._dut, "i_load_cs$load"),
+            clk=getattr(self._dut, "i_load_clk$load"),
+            data=getattr(self._dut, "i_load_data$load"),
+        )
 
     async def wb_read(self, addr):
         res = await self._wishbone.send_cycle([WBOp(addr)])
@@ -110,6 +120,35 @@ class SiLifeController:
         )
         while await self.wb_read(reg_max7219_ctrl) & REG_MAX7219_BUSY:
             pass
+
+    async def init_spi_loader(self, matrix_count=32):
+        await self._loader_spi.start()
+        await self._loader_spi.write(1, bits=1)
+        await self._loader_spi.write(0, bits=matrix_count)
+        await self._loader_spi.end()
+
+    async def spi_loader_write(self, row_index, cell_data, matrix_id=0):
+        await self._loader_spi.start()
+        await self._loader_spi.write(matrix_id & 0x7FFF, bits=16)
+        await self._loader_spi.write(row_index, bits=16)
+        await self._loader_spi.write(cell_data, bits=grid_width)
+        await self._loader_spi.end()
+
+    async def spi_loader_write_grid(self, grid, matrix_id=0):
+        await self._loader_spi.start()
+        await self._loader_spi.write(matrix_id & 0x7FFF, bits=16)
+        await self._loader_spi.write(0, bits=16)  # row offset
+        value = 0
+        bit_index = 0
+        for row in grid:
+            for col in row:
+                if col != " ":
+                    value |= bit(grid_width - bit_index - 1)
+                bit_index += 1
+            await self._loader_spi.write(value, bits=grid_width)
+            bit_index = 0
+            value = 0
+        await self._loader_spi.end()
 
 
 async def create_silife(dut):
@@ -237,9 +276,50 @@ async def test_life(dut):
     life.wrap = False
 
     for i in range(test_generations):
-        print("Testing generation {} of {} (no wrap)...".format(i + 1, test_generations))
+        print(
+            "Testing generation {} of {} (no wrap)...".format(i + 1, test_generations)
+        )
         life.step()
         await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
         assert await silife.read_grid() == life.dump()
+
+    clock_sig.kill()
+
+
+@cocotb.test()
+async def test_spi_loader(dut):
+    silife = await create_silife(dut)
+    clock_sig = await make_clock(dut, 10)
+    await reset(dut)
+
+    await silife.init_spi_loader()
+
+    # Load initial grid state
+    await silife.spi_loader_write_grid(
+        [
+            "        ",
+            " ***    ",
+            "        ",
+            "     *  ",
+            "     *  ",
+            "     *  ",
+            "**      ",
+            "**      ",
+        ]
+    )
+
+    # Extra two clock cycles for the data to propagate
+    await ClockCycles(dut.clk, 2)
+
+    assert await silife.read_grid((8, 8)) == [
+        "        ",
+        " ***    ",
+        "        ",
+        "     *  ",
+        "     *  ",
+        "     *  ",
+        "**      ",
+        "**      ",
+    ]
 
     clock_sig.kill()

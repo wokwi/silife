@@ -30,6 +30,16 @@ module silife #(
     output wire o_sync_out_w$syn,
     output wire o_busy,
 
+    output wire o_sync_active,
+    output wire o_sync_clk,
+    input  wire i_sync_busy$syn,
+
+    // Serial load interface
+    input wire i_load_cs$load,
+    input wire i_load_clk$load,
+    input wire i_load_data$load,
+    input wire o_load_data$load,
+
     // Wishbone interface
     input  wire        i_wb_cyc,   // wishbone transaction
     input  wire        i_wb_stb,   // strobe
@@ -49,7 +59,14 @@ module silife #(
   localparam REG_MAX7219_CTRL = 24'h010;
   localparam REG_MAX7219_CONFIG = 24'h014;
   localparam REG_MAX7219_BRIGHTNESS = 24'h018;
-  localparam io_pins = WIDTH + HEIGHT;
+
+  localparam ROW_BITS = $clog2(HEIGHT);
+
+  /* SPI Loader */
+  wire spi_loader_selected;
+  wire [ROW_BITS-1:0] spi_loader_row_select;
+  wire [WIDTH-1:0] spi_loader_set_cells;
+  wire [WIDTH-1:0] spi_loader_clear_cells;
 
   /* MAX7219 interface */
   reg max7219_enable;
@@ -99,12 +116,12 @@ module silife #(
   wire [23:0] wb_addr = i_wb_addr[23:0];
   wire wb_grid_select = i_wb_addr[23:12] == 12'h001;
 
-  wire [WIDTH-1:0] clear_cells;
-  wire [WIDTH-1:0] set_cells;
+  wire [WIDTH-1:0] wb_clear_cells;
+  wire [WIDTH-1:0] wb_set_cells;
   wire [WIDTH-1:0] cells;
   wire [WIDTH-1:0] cells_scan;
-  wire [$clog2(HEIGHT)-1:0] row_select;
-  wire [$clog2(HEIGHT)-1:0] row_select_scan;
+  wire [ROW_BITS-1:0] wb_row_select;
+  wire [ROW_BITS-1:0] row_select_scan;
 
 `ifdef SILIFE_TEST
   /* Pretty output for the test bench */
@@ -175,10 +192,10 @@ module silife #(
       .reset(reset),
       .clk(clk),
       .enable(enable || clk_pulse),
-      .row_select(row_select),
+      .row_select(spi_loader_selected ? spi_loader_row_select : wb_row_select),
       .row_select2(row_select_scan),
-      .clear_cells(clear_cells),
-      .set_cells(set_cells),
+      .clear_cells(spi_loader_selected ? spi_loader_clear_cells : wb_clear_cells),
+      .set_cells(spi_loader_selected ? spi_loader_set_cells : wb_set_cells),
       .cells(cells),
       .cells2(cells_scan),
       .i_ne(sync_en_n ? grid_in_ne : sync_fallback_ne),
@@ -193,6 +210,25 @@ module silife #(
       .o_e(grid_e),
       .o_s(grid_s),
       .o_w(grid_w)
+  );
+
+  silife_grid_loader #(
+      .WIDTH (WIDTH),
+      .HEIGHT(HEIGHT)
+
+  ) grid_spi_loader (
+      .reset(reset),
+      .clk  (clk),
+
+      .i_load_cs$load  (i_load_cs$load),
+      .i_load_clk$load (i_load_clk$load),
+      .i_load_data$load(i_load_data$load),
+      .o_load_data$load(o_load_data$load),
+
+      .o_selected(spi_loader_selected),
+      .o_row_select(spi_loader_row_select),
+      .o_set_cells(spi_loader_set_cells),
+      .o_clear_cells(spi_loader_clear_cells)
   );
 
   silife_grid_sync #(
@@ -235,10 +271,10 @@ module silife #(
       .reset(reset),
       .clk  (clk),
 
-      .clear_cells(clear_cells),
-      .set_cells(set_cells),
+      .clear_cells(wb_clear_cells),
+      .set_cells(wb_set_cells),
       .cells(cells),
-      .row_select(row_select),
+      .row_select(wb_row_select),
 
       .i_wb_cyc (i_wb_cyc),
       .i_wb_stb (i_wb_stb && wb_grid_select),
