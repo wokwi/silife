@@ -138,6 +138,14 @@ class SiLifeController:
         await self._loader_spi.write(cell_data, bits=grid_width)
         await self._loader_spi.end()
 
+    async def spi_loader_write_reg(self, addr, value, matrix_id=0):
+        await self._loader_spi.start()
+        await self._loader_spi.write(matrix_id & 0x7FFF, bits=16)
+        await self._loader_spi.write(0xFFFF, bits=16)
+        await self._loader_spi.write(addr, bits=32)
+        await self._loader_spi.write(value, bits=32)
+        await self._loader_spi.end()
+
     async def spi_loader_write_grid(self, grid, matrix_id=0):
         await self._loader_spi.start()
         await self._loader_spi.write(matrix_id & 0x7FFF, bits=16)
@@ -296,7 +304,7 @@ async def test_spi_loader(dut):
     clock_sig = await make_clock(dut, 10)
     await reset(dut)
 
-    await silife.init_spi_loader(first_address = 5)
+    await silife.init_spi_loader(first_address=5)
 
     # Load initial grid state
     await silife.spi_loader_write_grid(
@@ -310,7 +318,7 @@ async def test_spi_loader(dut):
             "**      ",
             "**      ",
         ],
-        matrix_id=5
+        matrix_id=5,
     )
 
     # Extra two clock cycles for the data to propagate
@@ -326,6 +334,25 @@ async def test_spi_loader(dut):
         "**      ",
         "**      ",
     ]
+
+    clock_sig.kill()
+
+
+@cocotb.test()
+async def test_spi_loader_control(dut):
+    silife = await create_silife(dut)
+    clock_sig = await make_clock(dut, 10)
+    await reset(dut)
+
+    await silife.init_spi_loader()
+
+    # Load initial grid state
+    await silife.spi_loader_write_reg(reg_max7219_brightness, 7)
+
+    # Extra two clock cycles for the data to propagate
+    await ClockCycles(dut.clk, 2)
+
+    assert await silife.wb_read(reg_max7219_brightness) == 7
 
     clock_sig.kill()
 
