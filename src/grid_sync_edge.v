@@ -7,8 +7,8 @@
 
 /* notes: 
    - i_cells is must not change while sync_active$syn is high 
-   - i_edge always depends on o_cells[0], so it should be stable 3 clk cycles
-     after the first rising edge of i_sync_clk$syn.
+   - i_corner always depends on o_cells[0] or o_last_cell$syn,
+     so it should be valid by the time send_corner$syn goes high.
 */
 module silife_grid_sync_edge #(
     parameter WIDTH = 32
@@ -55,7 +55,7 @@ module silife_grid_sync_edge #(
 
   reg [width_bits:0] bit_index_in;
   wire [width_bits-1:0] cell_index_in = bit_index_in[width_bits-1:0];
-  wire recieve_edge = bit_index_in[width_bits];
+  wire receive_corner = bit_index_in[width_bits];
 
   reg [1:0] sync_active_buf;
   reg [1:0] sync_clk_buf;
@@ -84,7 +84,7 @@ module silife_grid_sync_edge #(
         bit_index_in <= 0;
         o_busy <= 0;
       end else if (!prev_sync_clk && sync_clk) begin
-        if (recieve_edge) begin
+        if (receive_corner) begin
           o_busy   <= 0;
           o_corner <= sync_in;
         end else begin
