@@ -19,7 +19,7 @@ grid_width = 32
 test_generations = 50
 
 # How many grid segments do we have?
-grids_columns = 2
+grids_columns = 3
 grids_rows = 2
 
 # Wishbone bus registers

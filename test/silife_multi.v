@@ -24,21 +24,33 @@ module silife_multi (
   wire load_data_out_0_0;
 
   wire busy_0_1;
-  wire sync_0_1_w;
+  wire sync_0_1_e;
   wire sync_0_1_s;
+  wire sync_0_1_w;
   wire load_data_out_0_1;
 
+  wire busy_0_2;
+  wire sync_0_2_s;
+  wire sync_0_2_w;
+  wire load_data_out_0_2;
+
   wire busy_1_0;
-  wire sync_1_0_e;
   wire sync_1_0_n;
+  wire sync_1_0_e;
   wire load_data_out_1_0;
 
   wire busy_1_1;
-  wire sync_1_1_w;
   wire sync_1_1_n;
+  wire sync_1_1_e;
+  wire sync_1_1_w;
   wire load_data_out_1_1;
 
-  assign o_busy = |{busy_0_0, busy_0_1, busy_1_0, busy_1_1};
+  wire busy_1_2;
+  wire sync_1_2_n;
+  wire sync_1_2_w;
+  wire load_data_out_1_2;
+
+  assign o_busy = |{busy_0_0, busy_0_1, busy_0_2, busy_1_0, busy_1_1, busy_1_2};
 
   silife silife0_0 (
       .reset(reset),
@@ -72,14 +84,35 @@ module silife_multi (
       .i_sync_active$syn(i_sync_active),
       .i_sync_clk$syn(i_sync_clk),
       .i_sync_in_n$syn(1'b0),
-      .i_sync_in_e$syn(1'b0),
+      .i_sync_in_e$syn(sync_0_2_w),
       .i_sync_in_s$syn(sync_1_1_n),
       .i_sync_in_w$syn(sync_0_0_e),
       .o_sync_out_n$syn(),
-      .o_sync_out_e$syn(),
+      .o_sync_out_e$syn(sync_0_1_e),
       .o_sync_out_s$syn(sync_0_1_s),
       .o_sync_out_w$syn(sync_0_1_w),
       .o_busy(busy_0_1)
+  );
+
+  silife silife0_2 (
+      .reset(reset),
+      .clk(clk),
+      .i_load_cs$load(i_load_cs$load),
+      .i_load_clk$load(i_load_clk$load),
+      .i_load_data$load(load_data_out_0_1),
+      .o_load_data$load(load_data_out_0_2),
+
+      .i_sync_active$syn(i_sync_active),
+      .i_sync_clk$syn(i_sync_clk),
+      .i_sync_in_n$syn(1'b0),
+      .i_sync_in_e$syn(1'b0),
+      .i_sync_in_s$syn(sync_1_2_n),
+      .i_sync_in_w$syn(sync_0_1_e),
+      .o_sync_out_n$syn(),
+      .o_sync_out_e$syn(),
+      .o_sync_out_s$syn(sync_0_2_s),
+      .o_sync_out_w$syn(sync_0_2_w),
+      .o_busy(busy_0_2)
   );
 
   silife silife1_0 (
@@ -87,7 +120,7 @@ module silife_multi (
       .clk(clk),
       .i_load_cs$load(i_load_cs$load),
       .i_load_clk$load(i_load_clk$load),
-      .i_load_data$load(load_data_out_0_1),
+      .i_load_data$load(load_data_out_0_2),
       .o_load_data$load(load_data_out_1_0),
 
       .i_sync_active$syn(i_sync_active),
@@ -114,13 +147,34 @@ module silife_multi (
       .i_sync_active$syn(i_sync_active),
       .i_sync_clk$syn(i_sync_clk),
       .i_sync_in_n$syn(sync_0_1_s),
-      .i_sync_in_e$syn(1'b0),
+      .i_sync_in_e$syn(sync_1_2_w),
       .i_sync_in_s$syn(1'b0),
       .i_sync_in_w$syn(sync_1_0_e),
       .o_sync_out_n$syn(sync_1_1_n),
-      .o_sync_out_e$syn(),
+      .o_sync_out_e$syn(sync_1_1_e),
       .o_sync_out_s$syn(),
       .o_sync_out_w$syn(sync_1_1_w),
       .o_busy(busy_1_1)
+  );
+
+  silife silife1_2 (
+      .reset(reset),
+      .clk(clk),
+      .i_load_cs$load(i_load_cs$load),
+      .i_load_clk$load(i_load_clk$load),
+      .i_load_data$load(load_data_out_1_1),
+      .o_load_data$load(load_data_out_1_2),
+
+      .i_sync_active$syn(i_sync_active),
+      .i_sync_clk$syn(i_sync_clk),
+      .i_sync_in_n$syn(sync_0_2_s),
+      .i_sync_in_e$syn(1'b0),
+      .i_sync_in_s$syn(1'b0),
+      .i_sync_in_w$syn(sync_1_1_e),
+      .o_sync_out_n$syn(sync_1_2_n),
+      .o_sync_out_e$syn(),
+      .o_sync_out_s$syn(),
+      .o_sync_out_w$syn(sync_1_2_w),
+      .o_busy(busy_1_2)
   );
 endmodule
