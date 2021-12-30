@@ -339,6 +339,34 @@ async def test_spi_loader(dut):
 
 
 @cocotb.test()
+async def test_spi_loader_row_select(dut):
+    silife = await create_silife(dut)
+    clock_sig = await make_clock(dut, 10)
+    await reset(dut)
+
+    await silife.init_spi_loader()
+    await silife.spi_loader_write(2, 0b01110000)
+    await silife.spi_loader_write(5, 0b00000110)
+    await silife.spi_loader_write(6, 0b00000110)
+
+    # Extra two clock cycles for the data to propagate
+    await ClockCycles(dut.clk, 2)
+
+    assert await silife.read_grid((8, 8)) == [
+        "        ",
+        "        ",
+        "    *** ",
+        "        ",
+        "        ",
+        " **     ",
+        " **     ",
+        "        ",
+    ]
+
+    clock_sig.kill()
+
+
+@cocotb.test()
 async def test_spi_loader_control(dut):
     silife = await create_silife(dut)
     clock_sig = await make_clock(dut, 10)
