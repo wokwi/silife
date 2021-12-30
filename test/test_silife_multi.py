@@ -16,11 +16,11 @@ def bit(b):
 # Grid configuration
 grid_height = 32
 grid_width = 32
-test_generations = 50
+test_generations = 100
 
 # How many grid segments do we have?
 grids_columns = 3
-grids_rows = 2
+grids_rows = 3
 
 # Wishbone bus registers
 reg_ctrl = 0x3000_0000
