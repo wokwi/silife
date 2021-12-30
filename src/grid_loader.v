@@ -196,7 +196,7 @@ module silife_grid_loader #(
             bit_counter <= bit_counter - 1;
             o_control_data[bit_counter[4:0]] <= load_data;
             if (bit_counter == 0) begin
-              o_control_write <= 1;
+              o_control_write <= selected;
               bit_counter <= 31;
               state <= StateControlAddress;
             end
