@@ -1,10 +1,10 @@
 [*]
 [*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
-[*] Thu Dec 30 01:07:15 2021
+[*] Thu Dec 30 01:57:31 2021
 [*]
 [dumpfile] "/mnt/c/p/silife/silife_test_multi.vcd"
-[dumpfile_mtime] "Thu Dec 30 01:06:24 2021"
-[dumpfile_size] 97556964
+[dumpfile_mtime] "Thu Dec 30 01:54:21 2021"
+[dumpfile_size] 333768366
 [savefile] "/mnt/c/p/silife/test/silife_test_multi.gtkw"
 [timestart] 456681200
 [size] 1908 999
@@ -12,6 +12,7 @@
 *-15.997824 456915500 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] silife_multi.
 [treeopen] silife_multi.silife0_0.
+[treeopen] silife_multi.silife1_1.
 [sst_width] 214
 [signals_width] 214
 [sst_expanded] 1
@@ -25,8 +26,8 @@ silife_multi.\i_load_data$load
 silife_multi.o_busy
 @200
 -
-@800200
--silife_0_0
+@c00200
+-silife0_0
 @22
 silife_multi.silife0_0.dbg_local_address[14:0]
 @28
@@ -64,11 +65,11 @@ silife_multi.silife0_0.row28[255:0]
 silife_multi.silife0_0.row29[255:0]
 silife_multi.silife0_0.row30[255:0]
 silife_multi.silife0_0.row31[255:0]
-@1000200
--silife_0_0
+@1401200
+-silife0_0
 @200
 -
-@800200
+@c00200
 -silife0_1
 @22
 silife_multi.silife0_1.dbg_local_address[14:0]
@@ -105,7 +106,89 @@ silife_multi.silife0_1.row28[255:0]
 silife_multi.silife0_1.row29[255:0]
 silife_multi.silife0_1.row30[255:0]
 silife_multi.silife0_1.row31[255:0]
-@1000200
+@1401200
 -silife0_1
+@200
+-
+@c00200
+-silife1_0
+@22
+silife_multi.silife1_0.dbg_local_address[14:0]
+@820
+silife_multi.silife1_0.row00[255:0]
+silife_multi.silife1_0.row01[255:0]
+silife_multi.silife1_0.row02[255:0]
+silife_multi.silife1_0.row03[255:0]
+silife_multi.silife1_0.row04[255:0]
+silife_multi.silife1_0.row05[255:0]
+silife_multi.silife1_0.row06[255:0]
+silife_multi.silife1_0.row07[255:0]
+silife_multi.silife1_0.row08[255:0]
+silife_multi.silife1_0.row09[255:0]
+silife_multi.silife1_0.row10[255:0]
+silife_multi.silife1_0.row11[255:0]
+silife_multi.silife1_0.row12[255:0]
+silife_multi.silife1_0.row13[255:0]
+silife_multi.silife1_0.row14[255:0]
+silife_multi.silife1_0.row15[255:0]
+silife_multi.silife1_0.row16[255:0]
+silife_multi.silife1_0.row17[255:0]
+silife_multi.silife1_0.row18[255:0]
+silife_multi.silife1_0.row19[255:0]
+silife_multi.silife1_0.row20[255:0]
+silife_multi.silife1_0.row21[255:0]
+silife_multi.silife1_0.row22[255:0]
+silife_multi.silife1_0.row23[255:0]
+silife_multi.silife1_0.row24[255:0]
+silife_multi.silife1_0.row25[255:0]
+silife_multi.silife1_0.row26[255:0]
+silife_multi.silife1_0.row27[255:0]
+silife_multi.silife1_0.row28[255:0]
+silife_multi.silife1_0.row29[255:0]
+silife_multi.silife1_0.row30[255:0]
+silife_multi.silife1_0.row31[255:0]
+@1401200
+-silife1_0
+@201
+-
+@c00200
+-silife1_1
+@22
+silife_multi.silife1_1.dbg_local_address[14:0]
+@820
+silife_multi.silife1_1.row00[255:0]
+silife_multi.silife1_1.row01[255:0]
+silife_multi.silife1_1.row02[255:0]
+silife_multi.silife1_1.row03[255:0]
+silife_multi.silife1_1.row04[255:0]
+silife_multi.silife1_1.row05[255:0]
+silife_multi.silife1_1.row06[255:0]
+silife_multi.silife1_1.row07[255:0]
+silife_multi.silife1_1.row08[255:0]
+silife_multi.silife1_1.row09[255:0]
+silife_multi.silife1_1.row10[255:0]
+silife_multi.silife1_1.row11[255:0]
+silife_multi.silife1_1.row12[255:0]
+silife_multi.silife1_1.row13[255:0]
+silife_multi.silife1_1.row14[255:0]
+silife_multi.silife1_1.row15[255:0]
+silife_multi.silife1_1.row16[255:0]
+silife_multi.silife1_1.row17[255:0]
+silife_multi.silife1_1.row18[255:0]
+silife_multi.silife1_1.row19[255:0]
+silife_multi.silife1_1.row20[255:0]
+silife_multi.silife1_1.row21[255:0]
+silife_multi.silife1_1.row22[255:0]
+silife_multi.silife1_1.row23[255:0]
+silife_multi.silife1_1.row24[255:0]
+silife_multi.silife1_1.row25[255:0]
+silife_multi.silife1_1.row26[255:0]
+silife_multi.silife1_1.row27[255:0]
+silife_multi.silife1_1.row28[255:0]
+silife_multi.silife1_1.row29[255:0]
+silife_multi.silife1_1.row30[255:0]
+silife_multi.silife1_1.row31[255:0]
+@1401200
+-silife1_1
 [pattern_trace] 1
 [pattern_trace] 0

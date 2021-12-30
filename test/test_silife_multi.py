@@ -20,7 +20,7 @@ test_generations = 50
 
 # How many grid segments do we have?
 grids_columns = 2
-grids_rows = 1
+grids_rows = 2
 
 # Wishbone bus registers
 reg_ctrl = 0x3000_0000

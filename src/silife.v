@@ -363,10 +363,10 @@ module silife #(
           end
           REG_CONFIG: begin
             grid_wrap <= control_reg_data[0];
-            sync_en_n = control_reg_data[3];
-            sync_en_e = control_reg_data[4];
-            sync_en_s = control_reg_data[5];
-            sync_en_w = control_reg_data[6];
+            sync_en_n = control_reg_data[4];
+            sync_en_e = control_reg_data[5];
+            sync_en_s = control_reg_data[6];
+            sync_en_w = control_reg_data[7];
           end
           REG_MAX7219_CTRL: begin
             max7219_enable <= control_reg_data[0];
