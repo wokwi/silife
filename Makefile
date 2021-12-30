@@ -5,7 +5,7 @@ export COCOTB_REDUCED_LOG_FMT=1
 
 GENERATED_SOURCES= src/grid_8x8.v src/grid_16x16_ho.v src/grid_32x32_ho.v
 
-all: generate test_silife
+all: generate test_silife test_silife_multi
 
 generate: $(GENERATED_SOURCES)
 
@@ -49,6 +49,13 @@ test_silife:
 
 test_silife_show: test_silife
 	gtkwave silife_test.vcd test/silife_test.gtkw
+
+test_silife_multi:
+	iverilog -I src -s silife_multi -s dump -o silife_test_multi.out test/dump_silife_multi.v test/silife_multi.v src/silife.v src/buf_reg.v src/cell.v src/grid_8x8.v src/grid_16x16_ho.v src/grid_32x32_ho.v src/grid_loader.v src/grid_sync.v src/grid_sync_edge.v src/grid_wishbone.v src/max7219.v src/spi_master.v
+	MODULE=test.test_silife_multi vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus ./silife_test_multi.out
+
+test_silife_multi_show: test_silife_multi
+	gtkwave silife_test_multi.vcd test/silife_test_multi.gtkw
 
 format:
 	verible-verilog-format --inplace src/*.v test/*.v
