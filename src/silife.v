@@ -12,7 +12,7 @@ module silife #(
     input wire reset,
     input wire clk,
 
-    // SPI
+    // MAX7219 SPI
     output wire spi_cs,
     output wire spi_mosi,
     output wire spi_sck,
@@ -110,6 +110,13 @@ module silife #(
   wire [HEIGHT-1:0] sync_fallback_w = grid_wrap ? grid_e : {HEIGHT{1'b0}};
   wire sync_fallback_nw = grid_wrap ? grid_s[WIDTH-1] : 1'b0;
 
+  reg sync_generation;
+  wire sync_busy$syn;
+  reg sync_busy_past;
+  wire sync_busy;
+
+  assign o_busy = |{sync_busy$syn | sync_busy | sync_busy_past | sync_generation};
+
   /* Wishbone interface */
   reg wb_read_ack;
   reg wb_write_ack;
@@ -202,7 +209,7 @@ module silife #(
   silife_grid_32x32 grid (
       .reset(reset),
       .clk(clk),
-      .enable(enable || clk_pulse),
+      .enable(enable || clk_pulse || sync_generation),
       .row_select(spi_loader_selected ? spi_loader_row_select : wb_row_select),
       .row_select2(row_select_scan),
       .clear_cells(spi_loader_selected ? spi_loader_clear_cells : wb_clear_cells),
@@ -265,7 +272,8 @@ module silife #(
       .o_sync_out_e$syn(o_sync_out_e$syn),
       .o_sync_out_s$syn(o_sync_out_s$syn),
       .o_sync_out_w$syn(o_sync_out_w$syn),
-      .o_busy(o_busy),
+      .o_busy$syn(sync_busy$syn),
+      .o_busy(sync_busy),
 
       .i_grid_n (grid_n),
       .i_grid_e (grid_e),
@@ -342,7 +350,11 @@ module silife #(
       sync_en_e <= 1'b0;
       sync_en_s <= 1'b0;
       sync_en_w <= 1'b0;
+      sync_busy_past <= 1'b0;
+      sync_generation <= 1'b0;
     end else begin
+      sync_generation <= sync_busy_past && !sync_busy;
+      sync_busy_past  <= sync_busy;
       if (control_reg_write) begin
         case (control_reg_addr)
           REG_CTRL: begin

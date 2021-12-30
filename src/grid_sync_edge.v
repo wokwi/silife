@@ -20,6 +20,7 @@ module silife_grid_sync_edge #(
     input  wire i_sync_active$syn,
     input  wire i_sync_in$syn,
     output reg  o_sync_out$syn,
+    output reg  o_busy$syn,
     output reg  o_busy,
 
     input wire i_corner,
@@ -37,11 +38,13 @@ module silife_grid_sync_edge #(
 
   always @(negedge i_sync_clk$syn or negedge i_sync_active$syn) begin
     if (!i_sync_active$syn) begin
-      o_sync_out$syn <= 1'b0;
       bit_index_out$syn <= 0;
+      o_sync_out$syn <= 1'b0;
+      o_busy$syn <= 1'b0;
     end else begin
       bit_index_out$syn <= bit_index_out$syn + 1;
       o_sync_out$syn <= send_corner$syn ? i_corner : i_cells[cell_index_out$syn];
+      o_busy$syn <= !send_corner$syn;
     end
   end
 

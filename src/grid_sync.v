@@ -22,6 +22,7 @@ module silife_grid_sync #(
     output wire o_sync_out_e$syn,
     output wire o_sync_out_s$syn,
     output wire o_sync_out_w$syn,
+    output wire o_busy$syn,
     output wire o_busy,
 
     input wire [ WIDTH-1:0] i_grid_n,
@@ -43,7 +44,13 @@ module silife_grid_sync #(
   wire o_busy_e;
   wire o_busy_s;
   wire o_busy_w;
-  assign o_busy = o_busy_n | o_busy_e | o_busy_s | o_busy_w;
+  assign o_busy = |{o_busy_n, o_busy_e, o_busy_s, o_busy_w};
+
+  wire o_busy_n$syn;
+  wire o_busy_e$syn;
+  wire o_busy_s$syn;
+  wire o_busy_w$syn;
+  assign o_busy$syn = |{o_busy_n$syn, o_busy_e$syn, o_busy_s$syn, o_busy_w$syn};
 
   // Corner synchronization
   wire grid_n_last$syn;
@@ -61,6 +68,7 @@ module silife_grid_sync #(
       .i_sync_active$syn(i_sync_active$syn),
       .i_sync_in$syn(i_sync_in_n$syn),
       .o_sync_out$syn(o_sync_out_n$syn),
+      .o_busy$syn(o_busy_n$syn),
       .o_busy(o_busy_n),
 
       .i_corner(o_grid_w[0]),
@@ -80,6 +88,7 @@ module silife_grid_sync #(
       .i_sync_active$syn(i_sync_active$syn),
       .i_sync_in$syn(i_sync_in_e$syn),
       .o_sync_out$syn(o_sync_out_e$syn),
+      .o_busy$syn(o_busy_e$syn),
       .o_busy(o_busy_e),
 
       .i_corner(grid_n_last$syn),
@@ -99,6 +108,7 @@ module silife_grid_sync #(
       .i_sync_active$syn(i_sync_active$syn),
       .i_sync_in$syn(i_sync_in_s$syn),
       .o_sync_out$syn(o_sync_out_s$syn),
+      .o_busy$syn(o_busy_s$syn),
       .o_busy(o_busy_s),
 
       .i_corner(grid_e_last$syn),
@@ -118,6 +128,7 @@ module silife_grid_sync #(
       .i_sync_active$syn(i_sync_active$syn),
       .i_sync_in$syn(i_sync_in_w$syn),
       .o_sync_out$syn(o_sync_out_w$syn),
+      .o_busy$syn(o_busy_w$syn),
       .o_busy(o_busy_w),
 
       .i_corner(o_grid_s[0]),
