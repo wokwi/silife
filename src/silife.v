@@ -233,7 +233,6 @@ module silife #(
   silife_grid_loader #(
       .WIDTH (WIDTH),
       .HEIGHT(HEIGHT)
-
   ) grid_spi_loader (
       .reset(reset),
       .clk  (clk),
