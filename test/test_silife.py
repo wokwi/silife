@@ -4,8 +4,9 @@
 import os
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles
+from cocotb.triggers import ClockCycles, RisingEdge
 from cocotbext.wishbone.driver import WishboneMaster, WBOp
+from test.max7219_display import MAX7219MatrixDisplay
 from .game_of_life import GameOfLife
 from .mini_spi import MiniSPI
 
@@ -41,6 +42,8 @@ reg_max7219_brightness = 0x3000_0018
 
 reg_dbg_local_address = 0x3000_0020
 
+reg_trng_ctrl = 0x3000_0030
+
 wb_grid_start = 0x3000_1000
 
 wishbone_signals = {
@@ -55,7 +58,7 @@ wishbone_signals = {
 
 MATRIX_BROADCAST_ADDR = 0x7FFF
 
-test_max7219 = os.environ.get("TEST_MAX7219") != None
+dump_max7219_signals = os.environ.get("TEST_MAX7219") != None
 
 
 async def reset(dut):
@@ -67,7 +70,8 @@ async def reset(dut):
 
 async def make_clock(dut, clock_mhz):
     clk_period_ns = round(1 / clock_mhz * 1000, 2)
-    dut._log.info("input clock = %d MHz, period = %.2f ns" % (clock_mhz, clk_period_ns))
+    dut._log.info("input clock = %d MHz, period = %.2f ns" %
+                  (clock_mhz, clk_period_ns))
     clock = Clock(dut.clk, clk_period_ns, units="ns")
     clock_sig = cocotb.fork(clock.start())
     return clock_sig
@@ -82,6 +86,9 @@ class SiLifeController:
             cs=getattr(self._dut, "i_load_cs$load"),
             clk=getattr(self._dut, "i_load_clk$load"),
             data=getattr(self._dut, "i_load_data$load"),
+        )
+        self.max7219 = MAX7219MatrixDisplay(
+            cs=self._dut.spi_cs, clk=self._dut.spi_sck, data=self._dut.spi_mosi
         )
 
     async def wb_read(self, addr):
@@ -213,7 +220,7 @@ async def test_life(dut):
         ]
     )
 
-    if test_max7219:
+    if dump_max7219_signals:
         await silife.max7219_frame()
 
     # Run one step, observe the result
@@ -229,7 +236,7 @@ async def test_life(dut):
         "**      ",
     ]
 
-    if test_max7219:
+    if dump_max7219_signals:
         await silife.max7219_frame()
 
     # One more step - we should be back to the initial state
@@ -245,7 +252,7 @@ async def test_life(dut):
         "**      ",
     ]
 
-    if test_max7219:
+    if dump_max7219_signals:
         await silife.max7219_frame()
 
         await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
@@ -278,7 +285,8 @@ async def test_life(dut):
     await silife.wb_write(reg_config, REG_CONFIG_WRAP)
 
     for i in range(test_generations):
-        print("Testing generation {} of {} (wrap)...".format(i + 1, test_generations))
+        print("Testing generation {} of {} (wrap)...".format(
+            i + 1, test_generations))
         life.step()
         await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
         assert await silife.read_grid() == life.dump()
@@ -289,7 +297,8 @@ async def test_life(dut):
 
     for i in range(test_generations):
         print(
-            "Testing generation {} of {} (no wrap)...".format(i + 1, test_generations)
+            "Testing generation {} of {} (no wrap)...".format(
+                i + 1, test_generations)
         )
         life.step()
         await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
@@ -433,5 +442,132 @@ async def test_spi_loader_addr(dut):
 
     await silife.init_spi_loader(first_address=11)
     assert await silife.wb_read(reg_dbg_local_address) == 11
+
+    clock_sig.kill()
+
+
+@cocotb.test()
+async def test_max7219(dut):
+    silife = await create_silife(dut)
+    clock_sig = await make_clock(dut, 10)
+    await reset(dut)
+
+    # Load initial grid state
+    await silife.write_grid(
+        [
+            "                                ",
+            "                                ",
+            "   **** * *     *   **          ",
+            "  *       *        *    ***     ",
+            "   ***  * *     * **** *   *    ",
+            "      * * *     *  *   ****     ",
+            "      * * *     *  *   *        ",
+            "  ****  * ***** *  *    ****    ",
+            "                                ",
+            "                                ",
+            "                                ",
+            "                                ",
+            "                                ",
+            "                                ",
+            "           **     **            ",
+            "            **   **             ",
+            "         *  * * * *  *          ",
+            "         *** ** ** ***          ",
+            "          * * * * * *           ",
+            "           ***   ***            ",
+            "                                ",
+            "           ***   ***            ",
+            "          * * * * * *           ",
+            "         *** ** ** ***          ",
+            "         *  * * * *  *          ",
+            "            **   **             ",
+            "           **     **            ",
+            "                                ",
+            "                                ",
+            "                                ",
+            "                                ",
+            "                                ",
+        ]
+    )
+
+    # Enable MAX7219 output (setting brightness to 12 out of 15)
+    await silife.wb_write(reg_max7219_brightness, 12)
+    await silife.wb_write(reg_max7219_config, 0)
+
+    # Write grid over MAX7219
+    await silife.wb_write(reg_max7219_ctrl, REG_MAX7219_EN)
+    for _ in range(24):
+        await RisingEdge(dut.spi_cs)
+
+    print("[" + "]\n[".join(silife.max7219.dump()) + "]")
+
+    assert silife.max7219.dump() == [
+        "                                ",
+        "                                ",
+        "   **** * *     *   **          ",
+        "  *       *        *    ***     ",
+        "   ***  * *     * **** *   *    ",
+        "      * * *     *  *   ****     ",
+        "      * * *     *  *   *        ",
+        "  ****  * ***** *  *    ****    ",
+        "                                ",
+        "                                ",
+        "                                ",
+        "                                ",
+        "                                ",
+        "                                ",
+        "           **     **            ",
+        "            **   **             ",
+        "         *  * * * *  *          ",
+        "         *** ** ** ***          ",
+        "          * * * * * *           ",
+        "           ***   ***            ",
+        "                                ",
+        "           ***   ***            ",
+        "          * * * * * *           ",
+        "         *** ** ** ***          ",
+        "         *  * * * *  *          ",
+        "            **   **             ",
+        "           **     **            ",
+        "                                ",
+        "                                ",
+        "                                ",
+        "                                ",
+        "                                ",
+    ]
+
+    clock_sig.kill()
+
+
+@cocotb.test()
+async def test_trng(dut):
+    silife = await create_silife(dut)
+    clock_sig = await make_clock(dut, 10)
+    await reset(dut)
+
+    # Disable the Game of Life
+    await silife.wb_write(reg_ctrl, 0)
+
+    # Enable TRNG
+    await silife.wb_write(reg_trng_ctrl, 1)
+
+    # It should read busy
+    assert await silife.wb_read(reg_trng_ctrl) == 2
+
+    # Wait for 32x32 clock cycles (one TRNG pass)
+    await ClockCycles(dut.clk, 32 * 32)
+    assert await silife.wb_read(reg_trng_ctrl) == 0
+
+    # In simulation, the TRNG always outputs 1's, so assert that the grid is all 1's.
+    assert await silife.read_grid((8, 32)) == [
+        "********************************",
+        "********************************",
+        "********************************",
+        "********************************",
+        "********************************",
+        "********************************",
+        "********************************",
+        "********************************",
+    ]
 
     clock_sig.kill()
