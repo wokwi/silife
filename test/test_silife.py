@@ -42,6 +42,8 @@ reg_max7219_brightness = 0x3000_0018
 
 reg_dbg_local_address = 0x3000_0020
 
+reg_trng_ctrl = 0x3000_0030
+
 wb_grid_start = 0x3000_1000
 
 wishbone_signals = {
@@ -68,7 +70,8 @@ async def reset(dut):
 
 async def make_clock(dut, clock_mhz):
     clk_period_ns = round(1 / clock_mhz * 1000, 2)
-    dut._log.info("input clock = %d MHz, period = %.2f ns" % (clock_mhz, clk_period_ns))
+    dut._log.info("input clock = %d MHz, period = %.2f ns" %
+                  (clock_mhz, clk_period_ns))
     clock = Clock(dut.clk, clk_period_ns, units="ns")
     clock_sig = cocotb.fork(clock.start())
     return clock_sig
@@ -282,7 +285,8 @@ async def test_life(dut):
     await silife.wb_write(reg_config, REG_CONFIG_WRAP)
 
     for i in range(test_generations):
-        print("Testing generation {} of {} (wrap)...".format(i + 1, test_generations))
+        print("Testing generation {} of {} (wrap)...".format(
+            i + 1, test_generations))
         life.step()
         await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
         assert await silife.read_grid() == life.dump()
@@ -293,7 +297,8 @@ async def test_life(dut):
 
     for i in range(test_generations):
         print(
-            "Testing generation {} of {} (no wrap)...".format(i + 1, test_generations)
+            "Testing generation {} of {} (no wrap)...".format(
+                i + 1, test_generations)
         )
         life.step()
         await silife.wb_write(reg_ctrl, REG_CTRL_PULSE)
@@ -529,6 +534,40 @@ async def test_max7219(dut):
         "                                ",
         "                                ",
         "                                ",
+    ]
+
+    clock_sig.kill()
+
+
+@cocotb.test()
+async def test_trng(dut):
+    silife = await create_silife(dut)
+    clock_sig = await make_clock(dut, 10)
+    await reset(dut)
+
+    # Disable the Game of Life
+    await silife.wb_write(reg_ctrl, 0)
+
+    # Enable TRNG
+    await silife.wb_write(reg_trng_ctrl, 1)
+
+    # It should read busy
+    assert await silife.wb_read(reg_trng_ctrl) == 2
+
+    # Wait for 32x32 clock cycles (one TRNG pass)
+    await ClockCycles(dut.clk, 32 * 32)
+    assert await silife.wb_read(reg_trng_ctrl) == 0
+
+    # In simulation, the TRNG always outputs 1's, so assert that the grid is all 1's.
+    assert await silife.read_grid((8, 32)) == [
+        "********************************",
+        "********************************",
+        "********************************",
+        "********************************",
+        "********************************",
+        "********************************",
+        "********************************",
+        "********************************",
     ]
 
     clock_sig.kill()

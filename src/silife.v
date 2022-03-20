@@ -60,6 +60,7 @@ module silife #(
   localparam REG_MAX7219_CONFIG = 24'h014;
   localparam REG_MAX7219_BRIGHTNESS = 24'h018;
   localparam REG_DBG_LOCAL_ADDRESS = 24'h020;
+  localparam REG_TRNG_CTRL = 24'h030;
 
   localparam ROW_BITS = $clog2(HEIGHT);
 
@@ -116,6 +117,13 @@ module silife #(
   wire sync_busy;
 
   assign o_busy = |{sync_busy$syn | sync_busy | sync_busy_past | sync_generation};
+
+  /* TRNG Loader */
+  wire [ROW_BITS-1:0] trng_row_select;
+  wire [WIDTH-1:0] trng_set_cells;
+  wire [WIDTH-1:0] trng_clear_cells;
+  reg trng_start;
+  wire trng_busy;
 
   /* Wishbone interface */
   reg wb_read_ack;
@@ -210,10 +218,10 @@ module silife #(
       .reset(reset),
       .clk(clk),
       .enable(enable || clk_pulse || sync_generation),
-      .row_select(spi_loader_selected ? spi_loader_row_select : wb_row_select),
+      .row_select(trng_busy ? trng_row_select : spi_loader_selected ? spi_loader_row_select : wb_row_select),
       .row_select2(row_select_scan),
-      .clear_cells(spi_loader_selected ? spi_loader_clear_cells : wb_clear_cells),
-      .set_cells(spi_loader_selected ? spi_loader_set_cells : wb_set_cells),
+      .clear_cells(trng_busy ? trng_clear_cells : spi_loader_selected ? spi_loader_clear_cells : wb_clear_cells),
+      .set_cells(trng_busy ? trng_set_cells : spi_loader_selected ? spi_loader_set_cells : wb_set_cells),
       .cells(cells),
       .cells2(cells_scan),
       .i_ne(sync_en_n ? grid_in_ne : sync_fallback_ne),
@@ -288,6 +296,21 @@ module silife #(
       .o_grid_nw(grid_in_nw)
   );
 
+  silife_grid_trng_loader #(
+      .WIDTH (WIDTH),
+      .HEIGHT(HEIGHT)
+  ) trng_loader (
+      .reset(reset),
+      .clk  (clk),
+
+      .o_row_select (trng_row_select),
+      .o_set_cells  (trng_set_cells),
+      .o_clear_cells(trng_clear_cells),
+
+      .i_start(trng_start),
+      .o_busy (trng_busy)
+  );
+
   silife_grid_wishbone #(
       .WIDTH (WIDTH),
       .HEIGHT(HEIGHT)
@@ -324,6 +347,7 @@ module silife #(
         REG_MAX7219_CONFIG: o_wb_data <= {30'b0, max7219_serpentine, max7219_reverse_columns};
         REG_MAX7219_BRIGHTNESS: o_wb_data <= {28'b0, max7219_brightness};
         REG_DBG_LOCAL_ADDRESS: o_wb_data <= {17'b0, dbg_local_address};
+        REG_TRNG_CTRL: o_wb_data <= {30'b0, trng_busy, 1'b0};
         default: begin
           o_wb_data <= wb_grid_data;
         end
@@ -351,9 +375,11 @@ module silife #(
       sync_en_w <= 1'b0;
       sync_busy_past <= 1'b0;
       sync_generation <= 1'b0;
+      trng_start <= 1'b0;
     end else begin
       sync_generation <= sync_busy_past && !sync_busy;
-      sync_busy_past  <= sync_busy;
+      sync_busy_past <= sync_busy;
+      trng_start <= 1'b0;
       if (control_reg_write) begin
         case (control_reg_addr)
           REG_CTRL: begin
@@ -378,6 +404,9 @@ module silife #(
           end
           REG_MAX7219_BRIGHTNESS: begin
             max7219_brightness <= control_reg_data[3:0];
+          end
+          REG_TRNG_CTRL: begin
+            trng_start <= control_reg_data[0];
           end
         endcase
         if (wb_write) wb_write_ack <= 1;
