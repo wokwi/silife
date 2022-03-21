@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 export COCOTB_REDUCED_LOG_FMT=1
+export LIBPYTHON_LOC=$(shell cocotb-config --libpython)
 
 GENERATED_SOURCES= src/grid_8x8.v src/grid_16x16_ho.v src/grid_32x32_ho.v
 
