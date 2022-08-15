@@ -17,6 +17,11 @@ module silife #(
     output wire spi_mosi,
     output wire spi_sck,
 
+    // VGA
+    output wire vga_hsync,
+    output wire vga_vsync,
+    output wire vga_data,
+
     // Inter-grid synchronization
     input  wire i_sync_clk$syn,
     input  wire i_sync_active$syn,
@@ -83,6 +88,11 @@ module silife #(
   reg [3:0] max7219_brightness;
   reg max7219_reverse_columns;
   reg max7219_serpentine;
+  wire [ROW_BITS-1:0] max7219_row_select_scan;
+
+  /* VGA interface */
+  reg vga_active;
+  wire [ROW_BITS-1:0] vga_row_select_scan;
 
   /* Syncronization interface */
   wire [WIDTH-1:0] grid_n;
@@ -142,7 +152,7 @@ module silife #(
   wire [WIDTH-1:0] cells;
   wire [WIDTH-1:0] cells_scan;
   wire [ROW_BITS-1:0] wb_row_select;
-  wire [ROW_BITS-1:0] row_select_scan;
+  wire [ROW_BITS-1:0] row_select_scan = vga_active ? vga_row_select_scan : max7219_row_select_scan;
 
   /* Unified control interface */
   wire control_reg_write = wb_write | spi_loader_control_write;
@@ -211,7 +221,20 @@ module silife #(
       .o_sck(spi_sck),
       .o_mosi(spi_mosi),
       .o_busy(max7219_busy),
-      .o_row_select(row_select_scan)
+      .o_row_select(max7219_row_select_scan)
+  );
+
+  silife_vga #(
+      .WIDTH (WIDTH),
+      .HEIGHT(HEIGHT)
+  ) vga (
+      .reset(reset),
+      .clk(clk),
+      .i_cells(cells_scan),
+      .o_hsync(vga_hsync),
+      .o_vsync(vga_vsync),
+      .o_data(vga_data),
+      .o_row_select(vga_row_select_scan)
   );
 
   silife_grid_32x32 grid (
@@ -368,6 +391,7 @@ module silife #(
       max7219_reverse_columns <= 1'b1;
       max7219_serpentine <= 1'b1;
       max7219_brightness <= 4'hf;
+      vga_active <= 1'b0;
       grid_wrap <= 1'b0;
       sync_en_n <= 1'b0;
       sync_en_e <= 1'b0;
