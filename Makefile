@@ -4,22 +4,14 @@
 export COCOTB_REDUCED_LOG_FMT=1
 export LIBPYTHON_LOC=$(shell cocotb-config --libpython)
 
-GENERATED_SOURCES= src/grid_8x8.v src/grid_16x16_ho.v src/grid_32x32_ho.v
+GENERATED_SOURCES= src/grid_32x32.v
 
 all: generate test_silife test_silife_multi
 
 generate: $(GENERATED_SOURCES)
 
-src/grid_8x8.v: src/gen_grid.py
+src/grid_32x32.v: src/gen_grid.py
 	python $< > $@
-	verible-verilog-format --inplace $@
-
-src/grid_16x16_ho.v: src/gen_highorder_grid.py
-	python $< --sub_size 8 > $@
-	verible-verilog-format --inplace $@
-
-src/grid_32x32_ho.v: src/gen_highorder_grid.py
-	python $< --sub_size 16 > $@
 	verible-verilog-format --inplace $@
 
 test_cell:
@@ -27,8 +19,8 @@ test_cell:
 	./cell_tb.out
 	gtkwave cell_tb.vcd test/cell_tb.gtkw
 
-test_grid: src/grid_8x8.v
-	iverilog -g2005 -I src -o grid_tb.out test/grid_tb.v src/grid_8x8.v src/cell.v
+test_grid: src/grid_32x32.v
+	iverilog -g2005 -I src -o grid_tb.out test/grid_tb.v src/grid_32x32.v src/cell.v
 	./grid_tb.out
 	gtkwave grid_tb.vcd test/grid_tb.gtkw
 
@@ -45,14 +37,14 @@ test_max7219:
 	gtkwave max7219_tb.vcd test/max7219_tb.gtkw
 
 test_silife:
-	iverilog -I src -s silife -s dump -o silife_test.out test/dump_silife.v src/silife.v src/buf_reg.v src/cell.v src/grid_8x8.v src/grid_16x16_ho.v src/grid_32x32_ho.v src/grid_loader.v src/grid_sync.v src/grid_sync_edge.v src/grid_wishbone.v src/max7219.v src/spi_master.v src/trng.v src/grid_trng_loader.v
+	iverilog -I src -s silife -s dump -o silife_test.out test/dump_silife.v src/silife.v src/buf_reg.v src/cell.v src/grid_32x32.v src/grid_loader.v src/grid_sync.v src/grid_sync_edge.v src/grid_wishbone.v src/max7219.v src/spi_master.v src/trng.v src/grid_trng_loader.v
 	MODULE=test.test_silife vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus ./silife_test.out
 
 test_silife_show: test_silife
 	gtkwave silife_test.vcd test/silife_test.gtkw
 
 test_silife_multi:
-	iverilog -I src -s silife_multi -s dump -o silife_test_multi.out test/dump_silife_multi.v test/silife_multi.v src/silife.v src/buf_reg.v src/cell.v src/grid_8x8.v src/grid_16x16_ho.v src/grid_32x32_ho.v src/grid_loader.v src/grid_sync.v src/grid_sync_edge.v src/grid_wishbone.v src/max7219.v src/spi_master.v src/trng.v src/grid_trng_loader.v
+	iverilog -I src -s silife_multi -s dump -o silife_test_multi.out test/dump_silife_multi.v test/silife_multi.v src/silife.v src/buf_reg.v src/cell.v src/grid_32x32.v src/grid_loader.v src/grid_sync.v src/grid_sync_edge.v src/grid_wishbone.v src/max7219.v src/spi_master.v src/trng.v src/grid_trng_loader.v
 	MODULE=test.test_silife_multi vvp -M $$(cocotb-config --prefix)/cocotb/libs -m libcocotbvpi_icarus ./silife_test_multi.out
 
 test_silife_multi_show: test_silife_multi
