@@ -66,6 +66,7 @@ module silife #(
   localparam REG_MAX7219_BRIGHTNESS = 24'h018;
   localparam REG_DBG_LOCAL_ADDRESS = 24'h020;
   localparam REG_TRNG_CTRL = 24'h030;
+  localparam REG_VGA_CTRL = 24'h040;
 
   localparam ROW_BITS = $clog2(HEIGHT);
 
@@ -371,6 +372,7 @@ module silife #(
         REG_MAX7219_BRIGHTNESS: o_wb_data <= {28'b0, max7219_brightness};
         REG_DBG_LOCAL_ADDRESS: o_wb_data <= {17'b0, dbg_local_address};
         REG_TRNG_CTRL: o_wb_data <= {30'b0, trng_busy, 1'b0};
+        REG_VGA_CTRL: o_wb_data <= {31'b0, vga_active};
         default: begin
           o_wb_data <= wb_grid_data;
         end
@@ -431,6 +433,9 @@ module silife #(
           end
           REG_TRNG_CTRL: begin
             trng_start <= control_reg_data[0];
+          end
+          REG_VGA_CTRL: begin
+            vga_active <= control_reg_data[0];
           end
         endcase
         if (wb_write) wb_write_ack <= 1;

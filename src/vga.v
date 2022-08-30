@@ -12,7 +12,6 @@ module silife_vga #(
     input wire reset,
     input wire clk,
 
-    input wire i_enable,
     input wire [WIDTH-1:0] i_cells,
 
     // VGA interface
@@ -30,8 +29,10 @@ module silife_vga #(
   wire [9:0] x_px;
   wire [9:0] y_px;
 
-  assign o_row_select = y_px >> cell_shift;
-  assign o_data = i_cells[x_px>>cell_shift];
+  wire cell_valid = (x_px >> cell_shift) < WIDTH && (y_px >> cell_shift) < HEIGHT;
+
+  assign o_row_select = cell_valid ? y_px >> cell_shift : 0;
+  assign o_data = cell_valid ? i_cells[x_px>>cell_shift] : 0;
 
   vga_sync_gen vga_sync (
       .px_clk(clk),

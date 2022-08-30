@@ -44,6 +44,8 @@ reg_dbg_local_address = 0x3000_0020
 
 reg_trng_ctrl = 0x3000_0030
 
+reg_vga_ctrl = 0x3000_0040
+
 wb_grid_start = 0x3000_1000
 
 wishbone_signals = {
@@ -569,5 +571,30 @@ async def test_trng(dut):
         "********************************",
         "********************************",
     ]
+
+    clock_sig.kill()
+
+
+@cocotb.test()
+async def test_vga(dut):
+    silife = await create_silife(dut)
+    clock_sig = await make_clock(dut, 10)
+    await reset(dut)
+
+    # Disable the Game of Life
+    await silife.wb_write(reg_ctrl, 0)
+
+    # Enable VGA
+    await silife.wb_write(reg_vga_ctrl, 1)
+
+    # Load initial grid state
+    await silife.write_grid(
+        [
+            " *** *  ",
+        ]
+    )
+
+    for _ in range(50):
+        await RisingEdge(dut.vga_hsync)
 
     clock_sig.kill()
